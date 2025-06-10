@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import CallRiderSheet from '@/components/CallRiderSheet';
 import RequestDeliverySheet from '@/components/RequestDeliverySheet';
+import OrderDetails from '@/components/OrderDetails';
 import BottomNavigation from '@/components/BottomNavigation';
 import LiveMap from '@/components/LiveMap';
 import DeliveryStatus from '@/components/DeliveryStatus';
@@ -13,6 +14,8 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [showCallRider, setShowCallRider] = useState(false);
   const [showRequestDelivery, setShowRequestDelivery] = useState(false);
+  const [showOrderDetails, setShowOrderDetails] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const [activeDelivery, setActiveDelivery] = useState(null);
 
   const quickActions = [
@@ -22,37 +25,81 @@ const Index = () => {
     { id: 'errand', label: 'Errand', icon: Package },
   ];
 
+  const orders = [
+    { 
+      id: 1, 
+      title: 'Lunch from Tony\'s Pizza', 
+      time: '2 hours ago', 
+      rating: 4.8, 
+      status: 'delivered',
+      rider: 'Alex',
+      eta: null,
+      pickup: 'Tony\'s Pizza, Main St',
+      dropoff: '123 Main St, Your City'
+    },
+    { 
+      id: 2, 
+      title: 'Grocery Delivery', 
+      time: 'yesterday', 
+      rating: 5.0, 
+      status: 'delivered',
+      rider: 'Maria',
+      eta: null,
+      pickup: 'Fresh Market, Oak Ave',
+      dropoff: '123 Main St, Your City'
+    },
+    { 
+      id: 3, 
+      title: 'Office Documents', 
+      time: 'in progress', 
+      rating: null, 
+      status: 'in_progress',
+      rider: 'David',
+      eta: '15 min',
+      pickup: 'Downtown Office, 5th St',
+      dropoff: 'City Hall, Center Ave'
+    },
+  ];
+
   if (activeTab === 'orders') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
         <div className="p-4 pt-8">
           <h1 className="text-2xl font-bold text-gray-800 mb-6">Your Orders</h1>
-          <Card className="p-4 mb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold">Lunch from Tony's Pizza</h3>
-                <p className="text-sm text-gray-600">Delivered 2 hours ago</p>
+          {orders.map((order) => (
+            <Card key={order.id} className="p-4 mb-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => { setSelectedOrder(order); setShowOrderDetails(true); }}>
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <h3 className="font-semibold">{order.title}</h3>
+                  <div className="flex items-center mt-1">
+                    <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
+                      order.status === 'delivered' ? 'bg-green-500' : 
+                      order.status === 'in_progress' ? 'bg-blue-500 animate-pulse' : 'bg-gray-400'
+                    }`} />
+                    <p className="text-sm text-gray-600">
+                      {order.status === 'delivered' ? `Delivered ${order.time}` : 
+                       order.status === 'in_progress' ? `In progress • ETA ${order.eta}` : order.time}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  {order.rating && (
+                    <>
+                      <Star className="w-4 h-4 text-yellow-500 mr-1" />
+                      <span className="text-sm">{order.rating}</span>
+                    </>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center">
-                <Star className="w-4 h-4 text-yellow-500 mr-1" />
-                <span className="text-sm">4.8</span>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4 mb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold">Grocery Delivery</h3>
-                <p className="text-sm text-gray-600">Delivered yesterday</p>
-              </div>
-              <div className="flex items-center">
-                <Star className="w-4 h-4 text-yellow-500 mr-1" />
-                <span className="text-sm">5.0</span>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          ))}
         </div>
         <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        <OrderDetails 
+          isOpen={showOrderDetails} 
+          onClose={() => setShowOrderDetails(false)} 
+          order={selectedOrder} 
+        />
       </div>
     );
   }
@@ -110,30 +157,20 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 relative">
-      {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 p-4 pt-8">
-        <div className="flex items-center justify-between bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-lg">
-          <div>
-            <h1 className="text-lg font-bold text-gray-800">QuickDeliver</h1>
-            <p className="text-sm text-gray-600">📍 123 Main St, Your City</p>
-          </div>
-          <div className="flex items-center">
-            <Star className="w-4 h-4 text-yellow-500 mr-1" />
-            <span className="text-sm font-medium">4.9</span>
-          </div>
-        </div>
-      </div>
-
       {/* Live Map */}
       <LiveMap />
 
-      {/* Active Delivery Status */}
-      {activeDelivery && <DeliveryStatus delivery={activeDelivery} />}
+      {/* Active Delivery Status - moved to bottom right */}
+      {activeDelivery && (
+        <div className="absolute bottom-32 right-4 z-20 w-80">
+          <DeliveryStatus delivery={activeDelivery} />
+        </div>
+      )}
 
-      {/* Quick Actions */}
-      <div className="absolute top-32 left-4 right-4 z-10">
+      {/* Actions - moved to top left */}
+      <div className="absolute top-4 left-4 z-10">
         <div className="bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg">
-          <h3 className="font-semibold text-gray-800 mb-3">Quick Actions</h3>
+          <h3 className="font-semibold text-gray-800 mb-3">Actions</h3>
           <div className="grid grid-cols-2 gap-2">
             {quickActions.map((action) => (
               <Button
@@ -151,23 +188,23 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Bottom Action Buttons */}
+      {/* Bottom Action Buttons - side by side */}
       <div className="absolute bottom-20 left-4 right-4 z-10">
-        <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
           <Button
             onClick={() => setShowCallRider(true)}
-            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 rounded-xl shadow-lg flex items-center justify-center"
+            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 rounded-xl shadow-lg flex items-center justify-center"
           >
             <Phone className="w-5 h-5 mr-2" />
-            📞 Call a Rider
+            📞 Call Rider
           </Button>
           
           <Button
             onClick={() => setShowRequestDelivery(true)}
-            className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-4 rounded-xl shadow-lg flex items-center justify-center"
+            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-4 rounded-xl shadow-lg flex items-center justify-center"
           >
             <Package className="w-5 h-5 mr-2" />
-            📦 Request Delivery
+            📦 Delivery
           </Button>
         </div>
       </div>
@@ -192,6 +229,12 @@ const Index = () => {
           setActiveDelivery({ type: 'detailed', ...data });
           setShowRequestDelivery(false);
         }}
+      />
+
+      <OrderDetails 
+        isOpen={showOrderDetails} 
+        onClose={() => setShowOrderDetails(false)} 
+        order={selectedOrder} 
       />
     </div>
   );
