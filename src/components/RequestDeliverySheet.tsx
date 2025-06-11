@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, X, Calculator } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,14 +12,27 @@ interface RequestDeliverySheetProps {
   onClose: () => void;
   onConfirm: (data: any) => void;
   selectedAction?: string | null;
+  lastDelivery?: any;
 }
 
-const RequestDeliverySheet = ({ isOpen, onClose, onConfirm, selectedAction }: RequestDeliverySheetProps) => {
+const RequestDeliverySheet = ({ isOpen, onClose, onConfirm, selectedAction, lastDelivery }: RequestDeliverySheetProps) => {
   const [pickup, setPickup] = useState('123 Main St, Your City');
   const [dropoff, setDropoff] = useState('');
   const [description, setDescription] = useState('');
   const [showPickupSelector, setShowPickupSelector] = useState(false);
   const [showDropoffSelector, setShowDropoffSelector] = useState(false);
+
+  useEffect(() => {
+    if (selectedAction === 'last' && lastDelivery) {
+      setPickup(lastDelivery.pickup || '123 Main St, Your City');
+      setDropoff(lastDelivery.dropoff || '');
+      setDescription(lastDelivery.title || '');
+    } else {
+      setPickup('123 Main St, Your City');
+      setDropoff('');
+      setDescription('');
+    }
+  }, [selectedAction, lastDelivery, isOpen]);
 
   const handleConfirm = () => {
     onConfirm({
@@ -29,15 +42,17 @@ const RequestDeliverySheet = ({ isOpen, onClose, onConfirm, selectedAction }: Re
       fare: '$12.50',
       actionType: selectedAction
     });
-    setDropoff('');
-    setDescription('');
+    if (selectedAction !== 'last') {
+      setDropoff('');
+      setDescription('');
+    }
   };
 
   if (!isOpen) return null;
 
   const getActionLabel = (action: string | null) => {
     const labels = {
-      'last': 'Reuse Last Delivery',
+      'last': 'Repeat Last Delivery',
       'food': 'Food Delivery',
       'groceries': 'Grocery Delivery',
       'errand': 'Errand Service'

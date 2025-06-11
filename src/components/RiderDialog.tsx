@@ -50,7 +50,10 @@ const RiderDialog = ({ isOpen, onClose, rider, onSendOrder }: RiderDialogProps) 
                 {rider.name?.charAt(0)}
               </span>
             </div>
-            Send Order to {rider.name}
+            <div>
+              <div>Send Order to {rider.name}</div>
+              <div className="text-sm font-normal text-gray-600">{rider.company}</div>
+            </div>
           </DialogTitle>
         </DialogHeader>
 

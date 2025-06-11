@@ -1,18 +1,17 @@
 
 import React from 'react';
-import { Phone, Package, Clock, User, Search } from 'lucide-react';
+import { Phone, Package, Clock, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface BottomActionSheetProps {
   onCallRider: () => void;
   onRequestDelivery: () => void;
-  onFindRider: () => void;
   onActionClick: (actionId: string) => void;
 }
 
-const BottomActionSheet = ({ onCallRider, onRequestDelivery, onFindRider, onActionClick }: BottomActionSheetProps) => {
+const BottomActionSheet = ({ onCallRider, onRequestDelivery, onActionClick }: BottomActionSheetProps) => {
   const quickActions = [
-    { id: 'last', label: 'Reuse Last', icon: Clock },
+    { id: 'last', label: 'Repeat Delivery', icon: Clock },
     { id: 'food', label: 'Food', icon: Package },
     { id: 'groceries', label: 'Groceries', icon: Package },
     { id: 'errand', label: 'Errand', icon: Package },
@@ -58,15 +57,6 @@ const BottomActionSheet = ({ onCallRider, onRequestDelivery, onFindRider, onActi
             <span className="font-medium">Delivery</span>
           </Button>
         </div>
-
-        <Button
-          onClick={onFindRider}
-          variant="outline"
-          className="w-full py-3 rounded-xl border-2 border-purple-200 hover:bg-purple-50 hover:border-purple-300 flex items-center justify-center space-x-2"
-        >
-          <Search className="w-5 h-5 text-purple-600" />
-          <span className="font-medium text-purple-700">Find & Send Request</span>
-        </Button>
       </div>
     </div>
   );

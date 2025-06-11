@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { MapPin, Phone, Package, Clock, Star, User, Home as HomeIcon } from 'lucide-react';
+import { MapPin, Phone, Package, Clock, Star, User, Home as HomeIcon, Eye, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import CallRiderSheet from '@/components/CallRiderSheet';
@@ -10,7 +11,6 @@ import LiveMap from '@/components/LiveMap';
 import DeliveryNotification from '@/components/DeliveryNotification';
 import OrdersPage from '@/components/OrdersPage';
 import BottomActionSheet from '@/components/BottomActionSheet';
-import FindRiderSheet from '@/components/FindRiderSheet';
 import RiderDialog from '@/components/RiderDialog';
 import { useToast } from '@/hooks/use-toast';
 
@@ -18,7 +18,6 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [showCallRider, setShowCallRider] = useState(false);
   const [showRequestDelivery, setShowRequestDelivery] = useState(false);
-  const [showFindRider, setShowFindRider] = useState(false);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [showRiderDialog, setShowRiderDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -67,6 +66,10 @@ const Index = () => {
 
   const { toast } = useToast();
 
+  const inProgressDeliveries = orders.filter(order => 
+    ['in_progress', 'rider_accepted'].includes(order.status)
+  );
+
   useEffect(() => {
     if (activeDelivery) {
       setShowNotification(true);
@@ -85,6 +88,10 @@ const Index = () => {
   const handleActionClick = (actionId) => {
     setSelectedAction(actionId);
     setShowRequestDelivery(true);
+  };
+
+  const getLastDelivery = () => {
+    return orders.find(order => order.status === 'delivered') || null;
   };
 
   const handleDeliveryConfirm = (data) => {
@@ -217,6 +224,50 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 relative flex flex-col">
+      {/* Delivery In Progress Notification */}
+      {inProgressDeliveries.length > 0 && (
+        <div className="fixed top-4 left-4 right-4 z-50">
+          <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center flex-1">
+                <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center mr-2">
+                  <MapPin className="w-3 h-3 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {inProgressDeliveries[0].rider} • ETA {inProgressDeliveries[0].eta}
+                  </p>
+                  <p className="text-xs text-gray-600 truncate">
+                    📍 {inProgressDeliveries[0].pickup} → {inProgressDeliveries[0].dropoff}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-1 ml-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    setActiveTab('orders');
+                  }}
+                  className="h-6 px-2 text-xs"
+                >
+                  <List className="w-3 h-3 mr-1" />
+                  All
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                >
+                  <Eye className="w-3 h-3 mr-1" />
+                  Map
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Live Map - takes remaining space above bottom sheet */}
       <div className="flex-1 pb-48">
         <LiveMap onRiderClick={handleRiderClick} />
@@ -235,7 +286,6 @@ const Index = () => {
         <BottomActionSheet 
           onCallRider={() => setShowCallRider(true)}
           onRequestDelivery={() => setShowRequestDelivery(true)}
-          onFindRider={() => setShowFindRider(true)}
           onActionClick={handleActionClick}
         />
       </div>
@@ -265,15 +315,7 @@ const Index = () => {
           setSelectedAction(null);
         }}
         selectedAction={selectedAction}
-      />
-
-      <FindRiderSheet 
-        isOpen={showFindRider} 
-        onClose={() => setShowFindRider(false)}
-        onConfirm={(data) => {
-          handleDeliveryConfirm(data);
-          setShowFindRider(false);
-        }}
+        lastDelivery={getLastDelivery()}
       />
 
       <RiderDialog 

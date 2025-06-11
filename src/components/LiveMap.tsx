@@ -8,10 +8,10 @@ interface LiveMapProps {
 
 const LiveMap = ({ onRiderClick }: LiveMapProps) => {
   const riders = [
-    { id: 1, name: 'Alex', rating: 4.8, eta: '3 min', x: 30, y: 40, available: true },
-    { id: 2, name: 'Maria', rating: 4.9, eta: '5 min', x: 60, y: 60, available: true },
-    { id: 3, name: 'David', rating: 4.7, eta: '7 min', x: 45, y: 75, available: false },
-    { id: 4, name: 'Sarah', rating: 5.0, eta: '4 min', x: 70, y: 30, available: true },
+    { id: 1, name: 'Alex', rating: 4.8, eta: '3 min', x: 30, y: 40, available: true, company: 'FastRide Co.' },
+    { id: 2, name: 'Maria', rating: 4.9, eta: '5 min', x: 60, y: 60, available: true, company: 'QuickDelivery' },
+    { id: 3, name: 'David', rating: 4.7, eta: '7 min', x: 45, y: 75, available: false, company: 'SpeedyDispatch' },
+    { id: 4, name: 'Sarah', rating: 5.0, eta: '4 min', x: 70, y: 30, available: true, company: 'Independent' },
   ];
 
   return (
@@ -49,8 +49,9 @@ const LiveMap = ({ onRiderClick }: LiveMapProps) => {
             <div className={`w-8 h-8 ${rider.available ? 'bg-green-500' : 'bg-gray-400'} rounded-full border-2 border-white shadow-lg flex items-center justify-center transition-transform hover:scale-110`}>
               <MapPin className="w-4 h-4 text-white" />
             </div>
-            <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-lg min-w-20 text-center">
+            <div className="absolute -bottom-20 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-lg min-w-24 text-center">
               <p className="text-xs font-medium text-gray-800">{rider.name}</p>
+              <p className="text-xs text-gray-500">{rider.company}</p>
               <div className="flex items-center justify-center mt-1">
                 <Star className="w-3 h-3 text-yellow-500 mr-1" />
                 <span className="text-xs text-gray-600">{rider.rating}</span>
