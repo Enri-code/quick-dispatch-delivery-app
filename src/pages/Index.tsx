@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Phone, Package, Clock, Star, User, Home as HomeIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -8,7 +8,8 @@ import RequestDeliverySheet from '@/components/RequestDeliverySheet';
 import OrderDetails from '@/components/OrderDetails';
 import BottomNavigation from '@/components/BottomNavigation';
 import LiveMap from '@/components/LiveMap';
-import DeliveryStatus from '@/components/DeliveryStatus';
+import DeliveryNotification from '@/components/DeliveryNotification';
+import OrdersPage from '@/components/OrdersPage';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('home');
@@ -17,6 +18,8 @@ const Index = () => {
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [activeDelivery, setActiveDelivery] = useState(null);
+  const [showNotification, setShowNotification] = useState(false);
+  const [selectedAction, setSelectedAction] = useState(null);
 
   const quickActions = [
     { id: 'last', label: 'Reuse Last Delivery', icon: Clock },
@@ -35,7 +38,8 @@ const Index = () => {
       rider: 'Alex',
       eta: null,
       pickup: 'Tony\'s Pizza, Main St',
-      dropoff: '123 Main St, Your City'
+      dropoff: '123 Main St, Your City',
+      actionType: 'food'
     },
     { 
       id: 2, 
@@ -46,7 +50,8 @@ const Index = () => {
       rider: 'Maria',
       eta: null,
       pickup: 'Fresh Market, Oak Ave',
-      dropoff: '123 Main St, Your City'
+      dropoff: '123 Main St, Your City',
+      actionType: 'groceries'
     },
     { 
       id: 3, 
@@ -57,50 +62,40 @@ const Index = () => {
       rider: 'David',
       eta: '15 min',
       pickup: 'Downtown Office, 5th St',
-      dropoff: 'City Hall, Center Ave'
+      dropoff: 'City Hall, Center Ave',
+      actionType: 'errand'
     },
   ];
 
+  useEffect(() => {
+    if (activeDelivery) {
+      setShowNotification(true);
+      const timer = setTimeout(() => {
+        setShowNotification(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [activeDelivery]);
+
+  const handleActionClick = (actionId) => {
+    setSelectedAction(actionId);
+    setShowRequestDelivery(true);
+  };
+
   if (activeTab === 'orders') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
-        <div className="p-4 pt-8">
-          <h1 className="text-2xl font-bold text-gray-800 mb-6">Your Orders</h1>
-          {orders.map((order) => (
-            <Card key={order.id} className="p-4 mb-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => { setSelectedOrder(order); setShowOrderDetails(true); }}>
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h3 className="font-semibold">{order.title}</h3>
-                  <div className="flex items-center mt-1">
-                    <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
-                      order.status === 'delivered' ? 'bg-green-500' : 
-                      order.status === 'in_progress' ? 'bg-blue-500 animate-pulse' : 'bg-gray-400'
-                    }`} />
-                    <p className="text-sm text-gray-600">
-                      {order.status === 'delivered' ? `Delivered ${order.time}` : 
-                       order.status === 'in_progress' ? `In progress • ETA ${order.eta}` : order.time}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  {order.rating && (
-                    <>
-                      <Star className="w-4 h-4 text-yellow-500 mr-1" />
-                      <span className="text-sm">{order.rating}</span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+      <>
+        <OrdersPage 
+          orders={orders} 
+          onOrderClick={(order) => { setSelectedOrder(order); setShowOrderDetails(true); }}
+        />
         <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
         <OrderDetails 
           isOpen={showOrderDetails} 
           onClose={() => setShowOrderDetails(false)} 
           order={selectedOrder} 
         />
-      </div>
+      </>
     );
   }
 
@@ -160,33 +155,13 @@ const Index = () => {
       {/* Live Map */}
       <LiveMap />
 
-      {/* Active Delivery Status - moved to bottom right */}
-      {activeDelivery && (
-        <div className="absolute bottom-32 right-4 z-20 w-80">
-          <DeliveryStatus delivery={activeDelivery} />
-        </div>
+      {/* Delivery Notification */}
+      {showNotification && activeDelivery && (
+        <DeliveryNotification 
+          delivery={activeDelivery} 
+          onDismiss={() => setShowNotification(false)}
+        />
       )}
-
-      {/* Actions - moved to top left */}
-      <div className="absolute top-4 left-4 z-10">
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg">
-          <h3 className="font-semibold text-gray-800 mb-3">Actions</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {quickActions.map((action) => (
-              <Button
-                key={action.id}
-                variant="outline"
-                size="sm"
-                className="flex items-center justify-center p-3 h-auto"
-                onClick={() => setShowRequestDelivery(true)}
-              >
-                <action.icon className="w-4 h-4 mr-2" />
-                <span className="text-xs">{action.label}</span>
-              </Button>
-            ))}
-          </div>
-        </div>
-      </div>
 
       {/* Bottom Action Buttons - side by side */}
       <div className="absolute bottom-20 left-4 right-4 z-10">
@@ -209,6 +184,27 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Actions - moved below main buttons */}
+      <div className="absolute bottom-32 left-4 right-4 z-10">
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg">
+          <h3 className="font-semibold text-gray-800 mb-3 text-center">Actions</h3>
+          <div className="grid grid-cols-2 gap-2">
+            {quickActions.map((action) => (
+              <Button
+                key={action.id}
+                variant="outline"
+                size="sm"
+                className="flex items-center justify-center p-3 h-auto"
+                onClick={() => handleActionClick(action.id)}
+              >
+                <action.icon className="w-4 h-4 mr-2" />
+                <span className="text-xs">{action.label}</span>
+              </Button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Bottom Navigation */}
       <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
@@ -217,18 +213,23 @@ const Index = () => {
         isOpen={showCallRider} 
         onClose={() => setShowCallRider(false)}
         onConfirm={(data) => {
-          setActiveDelivery({ type: 'quick', ...data });
+          setActiveDelivery({ type: 'quick', actionType: 'call', ...data });
           setShowCallRider(false);
         }}
       />
       
       <RequestDeliverySheet 
         isOpen={showRequestDelivery} 
-        onClose={() => setShowRequestDelivery(false)}
-        onConfirm={(data) => {
-          setActiveDelivery({ type: 'detailed', ...data });
+        onClose={() => {
           setShowRequestDelivery(false);
+          setSelectedAction(null);
         }}
+        onConfirm={(data) => {
+          setActiveDelivery({ type: 'detailed', actionType: selectedAction || 'delivery', ...data });
+          setShowRequestDelivery(false);
+          setSelectedAction(null);
+        }}
+        selectedAction={selectedAction}
       />
 
       <OrderDetails 
