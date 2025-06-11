@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { MapPin, Phone, Package, Clock, Star, User, Home as HomeIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ import DeliveryNotification from '@/components/DeliveryNotification';
 import OrdersPage from '@/components/OrdersPage';
 import BottomActionSheet from '@/components/BottomActionSheet';
 import FindRiderSheet from '@/components/FindRiderSheet';
+import RiderDialog from '@/components/RiderDialog';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -20,7 +20,9 @@ const Index = () => {
   const [showRequestDelivery, setShowRequestDelivery] = useState(false);
   const [showFindRider, setShowFindRider] = useState(false);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
+  const [showRiderDialog, setShowRiderDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedRider, setSelectedRider] = useState(null);
   const [activeDelivery, setActiveDelivery] = useState(null);
   const [showNotification, setShowNotification] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
@@ -74,6 +76,11 @@ const Index = () => {
       return () => clearTimeout(timer);
     }
   }, [activeDelivery]);
+
+  const handleRiderClick = (rider) => {
+    setSelectedRider(rider);
+    setShowRiderDialog(true);
+  };
 
   const handleActionClick = (actionId) => {
     setSelectedAction(actionId);
@@ -210,9 +217,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 relative flex flex-col">
-      {/* Live Map - takes full height minus bottom sheet */}
-      <div className="flex-1">
-        <LiveMap />
+      {/* Live Map - takes remaining space above bottom sheet */}
+      <div className="flex-1 pb-48">
+        <LiveMap onRiderClick={handleRiderClick} />
       </div>
 
       {/* Delivery Notification */}
@@ -223,13 +230,15 @@ const Index = () => {
         />
       )}
 
-      {/* Bottom Action Sheet */}
-      <BottomActionSheet 
-        onCallRider={() => setShowCallRider(true)}
-        onRequestDelivery={() => setShowRequestDelivery(true)}
-        onFindRider={() => setShowFindRider(true)}
-        onActionClick={handleActionClick}
-      />
+      {/* Fixed Bottom Action Sheet */}
+      <div className="fixed bottom-16 left-0 right-0 z-40">
+        <BottomActionSheet 
+          onCallRider={() => setShowCallRider(true)}
+          onRequestDelivery={() => setShowRequestDelivery(true)}
+          onFindRider={() => setShowFindRider(true)}
+          onActionClick={handleActionClick}
+        />
+      </div>
 
       {/* Bottom Navigation */}
       <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
@@ -264,6 +273,16 @@ const Index = () => {
         onConfirm={(data) => {
           handleDeliveryConfirm(data);
           setShowFindRider(false);
+        }}
+      />
+
+      <RiderDialog 
+        isOpen={showRiderDialog}
+        onClose={() => setShowRiderDialog(false)}
+        rider={selectedRider}
+        onSendOrder={(data) => {
+          handleDeliveryConfirm(data);
+          setShowRiderDialog(false);
         }}
       />
 

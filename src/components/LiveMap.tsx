@@ -2,12 +2,16 @@
 import React from 'react';
 import { MapPin, Star } from 'lucide-react';
 
-const LiveMap = () => {
+interface LiveMapProps {
+  onRiderClick?: (rider: any) => void;
+}
+
+const LiveMap = ({ onRiderClick }: LiveMapProps) => {
   const riders = [
-    { id: 1, name: 'Alex', rating: 4.8, eta: '3 min', x: 30, y: 40 },
-    { id: 2, name: 'Maria', rating: 4.9, eta: '5 min', x: 60, y: 60 },
-    { id: 3, name: 'David', rating: 4.7, eta: '7 min', x: 45, y: 75 },
-    { id: 4, name: 'Sarah', rating: 5.0, eta: '4 min', x: 70, y: 30 },
+    { id: 1, name: 'Alex', rating: 4.8, eta: '3 min', x: 30, y: 40, available: true },
+    { id: 2, name: 'Maria', rating: 4.9, eta: '5 min', x: 60, y: 60, available: true },
+    { id: 3, name: 'David', rating: 4.7, eta: '7 min', x: 45, y: 75, available: false },
+    { id: 4, name: 'Sarah', rating: 5.0, eta: '4 min', x: 70, y: 30, available: true },
   ];
 
   return (
@@ -37,11 +41,12 @@ const LiveMap = () => {
       {riders.map((rider) => (
         <div
           key={rider.id}
-          className="absolute"
+          className="absolute cursor-pointer"
           style={{ left: `${rider.x}%`, top: `${rider.y}%`, transform: 'translate(-50%, -50%)' }}
+          onClick={() => rider.available && onRiderClick?.(rider)}
         >
           <div className="relative">
-            <div className="w-8 h-8 bg-green-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center">
+            <div className={`w-8 h-8 ${rider.available ? 'bg-green-500' : 'bg-gray-400'} rounded-full border-2 border-white shadow-lg flex items-center justify-center transition-transform hover:scale-110`}>
               <MapPin className="w-4 h-4 text-white" />
             </div>
             <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-lg min-w-20 text-center">
@@ -50,7 +55,9 @@ const LiveMap = () => {
                 <Star className="w-3 h-3 text-yellow-500 mr-1" />
                 <span className="text-xs text-gray-600">{rider.rating}</span>
               </div>
-              <p className="text-xs text-green-600 font-medium">{rider.eta}</p>
+              <p className={`text-xs font-medium ${rider.available ? 'text-green-600' : 'text-gray-500'}`}>
+                {rider.available ? rider.eta : 'Busy'}
+              </p>
             </div>
           </div>
         </div>
