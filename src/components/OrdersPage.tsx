@@ -18,13 +18,14 @@ const OrdersPage = ({ orders, onOrderClick }: OrdersPageProps) => {
     { id: 'all', label: 'All' },
     { id: 'in_progress', label: 'In Progress' },
     { id: 'delivered', label: 'Completed' },
-    { id: 'failed', label: 'Failed' },
+    { id: 'cancelled', label: 'Cancelled' },
   ];
 
   const filteredOrders = orders.filter(order => {
     if (filter === 'all') return true;
     if (filter === 'delivered') return order.status === 'delivered';
     if (filter === 'in_progress') return ['in_progress', 'waiting_for_rider', 'rider_accepted'].includes(order.status);
+    if (filter === 'cancelled') return order.status === 'cancelled';
     return order.status === filter;
   });
 
@@ -35,7 +36,7 @@ const OrdersPage = ({ orders, onOrderClick }: OrdersPageProps) => {
       'rider_accepted': 2,
       'waiting_for_rider': 3,
       'delivered': 4,
-      'failed': 5
+      'cancelled': 5
     };
     return (statusPriority[a.status] || 6) - (statusPriority[b.status] || 6);
   });
@@ -50,16 +51,16 @@ const OrdersPage = ({ orders, onOrderClick }: OrdersPageProps) => {
         return { text: `In progress • ETA ${order.eta}`, color: 'bg-blue-500', animate: true };
       case 'delivered':
         return { text: `Delivered ${order.time}`, color: 'bg-green-500', animate: false };
-      case 'failed':
-        return { text: `Failed ${order.time}`, color: 'bg-red-500', animate: false };
+      case 'cancelled':
+        return { text: `Cancelled ${order.time}`, color: 'bg-red-500', animate: false };
       default:
         return { text: order.time, color: 'bg-gray-400', animate: false };
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
-      <div className="p-4 pt-8">
+    <div className="h-full flex flex-col bg-gradient-to-br from-blue-50 to-green-50">
+      <div className="flex-1 overflow-auto p-4 pt-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Your Orders</h1>
           <Button 

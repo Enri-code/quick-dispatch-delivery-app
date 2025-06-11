@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Phone, Package, Clock, User } from 'lucide-react';
+import { Phone, Package, Clock, User, Repeat, Utensils, ShoppingCart, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface BottomActionSheetProps {
@@ -11,29 +11,29 @@ interface BottomActionSheetProps {
 
 const BottomActionSheet = ({ onCallRider, onRequestDelivery, onActionClick }: BottomActionSheetProps) => {
   const quickActions = [
-    { id: 'last', label: 'Repeat Delivery', icon: Clock },
-    { id: 'food', label: 'Food', icon: Package },
-    { id: 'groceries', label: 'Groceries', icon: Package },
-    { id: 'errand', label: 'Errand', icon: Package },
+    { id: 'last', label: 'Repeat Delivery', icon: Repeat, color: 'bg-purple-100 text-purple-600' },
+    { id: 'food', label: 'Food', icon: Utensils, color: 'bg-orange-100 text-orange-600' },
+    { id: 'groceries', label: 'Groceries', icon: ShoppingCart, color: 'bg-green-100 text-green-600' },
+    { id: 'errand', label: 'Errand', icon: FileText, color: 'bg-blue-100 text-blue-600' },
   ];
 
   return (
-    <div className="bg-white border-t border-gray-200 shadow-lg">
+    <div className="bg-white">
       {/* Quick Actions */}
-      <div className="px-4 py-3 border-b border-gray-100">
+      <div className="px-4 py-4 border-b border-gray-100">
         <h3 className="text-sm font-semibold text-gray-700 mb-3">Quick Actions</h3>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-3">
           {quickActions.map((action) => (
-            <Button
+            <button
               key={action.id}
-              variant="outline"
-              size="sm"
-              className="flex flex-col items-center p-3 h-auto space-y-1 hover:bg-blue-50 hover:border-blue-200"
+              className="flex flex-col items-center p-3 rounded-xl hover:bg-gray-50 transition-colors"
               onClick={() => onActionClick(action.id)}
             >
-              <action.icon className="w-4 h-4 text-blue-600" />
-              <span className="text-xs text-gray-700">{action.label}</span>
-            </Button>
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${action.color}`}>
+                <action.icon className="w-6 h-6" />
+              </div>
+              <span className="text-xs font-medium text-gray-700 text-center leading-tight">{action.label}</span>
+            </button>
           ))}
         </div>
       </div>

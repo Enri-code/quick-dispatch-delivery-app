@@ -12,6 +12,8 @@ import DeliveryNotification from '@/components/DeliveryNotification';
 import OrdersPage from '@/components/OrdersPage';
 import BottomActionSheet from '@/components/BottomActionSheet';
 import RiderDialog from '@/components/RiderDialog';
+import RiderArrivedSheet from '@/components/RiderArrivedSheet';
+import RateDeliverySheet from '@/components/RateDeliverySheet';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -20,6 +22,8 @@ const Index = () => {
   const [showRequestDelivery, setShowRequestDelivery] = useState(false);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [showRiderDialog, setShowRiderDialog] = useState(false);
+  const [showRiderArrived, setShowRiderArrived] = useState(false);
+  const [showRateDelivery, setShowRateDelivery] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedRider, setSelectedRider] = useState(null);
   const [activeDelivery, setActiveDelivery] = useState(null);
@@ -33,6 +37,7 @@ const Index = () => {
       rating: 4.8, 
       status: 'delivered',
       rider: 'Alex',
+      riderCompany: 'FastRide Co.',
       eta: null,
       pickup: 'Tony\'s Pizza, Main St',
       dropoff: '123 Main St, Your City',
@@ -45,6 +50,7 @@ const Index = () => {
       rating: 5.0, 
       status: 'delivered',
       rider: 'Maria',
+      riderCompany: 'QuickDelivery',
       eta: null,
       pickup: 'Fresh Market, Oak Ave',
       dropoff: '123 Main St, Your City',
@@ -57,6 +63,7 @@ const Index = () => {
       rating: null, 
       status: 'in_progress',
       rider: 'David',
+      riderCompany: 'SpeedyDispatch',
       eta: '15 min',
       pickup: 'Downtown Office, 5th St',
       dropoff: 'City Hall, Center Ave',
@@ -156,25 +163,27 @@ const Index = () => {
 
   if (activeTab === 'orders') {
     return (
-      <>
-        <OrdersPage 
-          orders={orders} 
-          onOrderClick={(order) => { setSelectedOrder(order); setShowOrderDetails(true); }}
-        />
+      <div className="h-screen flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-hidden">
+          <OrdersPage 
+            orders={orders} 
+            onOrderClick={(order) => { setSelectedOrder(order); setShowOrderDetails(true); }}
+          />
+        </div>
         <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
         <OrderDetails 
           isOpen={showOrderDetails} 
           onClose={() => setShowOrderDetails(false)} 
           order={selectedOrder} 
         />
-      </>
+      </div>
     );
   }
 
   if (activeTab === 'profile') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
-        <div className="p-4 pt-8">
+      <div className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-blue-50 to-green-50">
+        <div className="flex-1 overflow-auto p-4 pt-8">
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <User className="w-10 h-10 text-white" />
@@ -223,10 +232,10 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 relative flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-blue-50 to-green-50 relative">
       {/* Delivery In Progress Notification */}
       {inProgressDeliveries.length > 0 && (
-        <div className="fixed top-4 left-4 right-4 z-50">
+        <div className="absolute top-4 left-4 right-4 z-50">
           <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center flex-1">
@@ -269,7 +278,7 @@ const Index = () => {
       )}
 
       {/* Live Map - takes remaining space above bottom sheet */}
-      <div className="flex-1 pb-48">
+      <div className="flex-1 relative">
         <LiveMap onRiderClick={handleRiderClick} />
       </div>
 
@@ -282,7 +291,7 @@ const Index = () => {
       )}
 
       {/* Fixed Bottom Action Sheet */}
-      <div className="fixed bottom-16 left-0 right-0 z-40">
+      <div className="bg-white border-t border-gray-200 shadow-lg">
         <BottomActionSheet 
           onCallRider={() => setShowCallRider(true)}
           onRequestDelivery={() => setShowRequestDelivery(true)}
@@ -325,6 +334,31 @@ const Index = () => {
         onSendOrder={(data) => {
           handleDeliveryConfirm(data);
           setShowRiderDialog(false);
+        }}
+      />
+
+      <RiderArrivedSheet 
+        isOpen={showRiderArrived}
+        onClose={() => setShowRiderArrived(false)}
+        delivery={selectedOrder}
+        onMarkDelivered={() => {
+          setShowRiderArrived(false);
+          setShowRateDelivery(true);
+        }}
+      />
+
+      <RateDeliverySheet 
+        isOpen={showRateDelivery}
+        onClose={() => setShowRateDelivery(false)}
+        delivery={selectedOrder}
+        onSubmitRating={(rating) => {
+          // Update order with rating
+          setOrders(prev => prev.map(order => 
+            order.id === selectedOrder?.id 
+              ? { ...order, status: 'delivered', rating }
+              : order
+          ));
+          setShowRateDelivery(false);
         }}
       />
 

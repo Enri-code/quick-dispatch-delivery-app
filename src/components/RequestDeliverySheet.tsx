@@ -52,7 +52,7 @@ const RequestDeliverySheet = ({ isOpen, onClose, onConfirm, selectedAction, last
 
   const getActionLabel = (action: string | null) => {
     const labels = {
-      'last': 'Repeat Last Delivery',
+      'last': 'Repeat Delivery',
       'food': 'Food Delivery',
       'groceries': 'Grocery Delivery',
       'errand': 'Errand Service'
@@ -120,7 +120,7 @@ const RequestDeliverySheet = ({ isOpen, onClose, onConfirm, selectedAction, last
             </div>
 
             <div>
-              <Label htmlFor="description">Delivery Description</Label>
+              <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
                 placeholder="What are you delivering?"
