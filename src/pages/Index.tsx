@@ -10,25 +10,21 @@ import BottomNavigation from '@/components/BottomNavigation';
 import LiveMap from '@/components/LiveMap';
 import DeliveryNotification from '@/components/DeliveryNotification';
 import OrdersPage from '@/components/OrdersPage';
+import BottomActionSheet from '@/components/BottomActionSheet';
+import FindRiderSheet from '@/components/FindRiderSheet';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [showCallRider, setShowCallRider] = useState(false);
   const [showRequestDelivery, setShowRequestDelivery] = useState(false);
+  const [showFindRider, setShowFindRider] = useState(false);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [activeDelivery, setActiveDelivery] = useState(null);
   const [showNotification, setShowNotification] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
-
-  const quickActions = [
-    { id: 'last', label: 'Reuse Last Delivery', icon: Clock },
-    { id: 'food', label: 'Food', icon: Package },
-    { id: 'groceries', label: 'Groceries', icon: Package },
-    { id: 'errand', label: 'Errand', icon: Package },
-  ];
-
-  const orders = [
+  const [orders, setOrders] = useState([
     { 
       id: 1, 
       title: 'Lunch from Tony\'s Pizza', 
@@ -65,7 +61,9 @@ const Index = () => {
       dropoff: 'City Hall, Center Ave',
       actionType: 'errand'
     },
-  ];
+  ]);
+
+  const { toast } = useToast();
 
   useEffect(() => {
     if (activeDelivery) {
@@ -80,6 +78,66 @@ const Index = () => {
   const handleActionClick = (actionId) => {
     setSelectedAction(actionId);
     setShowRequestDelivery(true);
+  };
+
+  const handleDeliveryConfirm = (data) => {
+    // Create new order with waiting status
+    const newOrder = {
+      id: Date.now(),
+      title: data.description || 'New Delivery',
+      time: 'just now',
+      rating: null,
+      status: 'waiting_for_rider',
+      rider: null,
+      eta: null,
+      pickup: data.pickup,
+      dropoff: data.dropoff,
+      actionType: data.actionType || 'delivery'
+    };
+
+    setOrders(prev => [newOrder, ...prev]);
+    
+    // Show waiting notification
+    toast({
+      title: "Delivery Requested",
+      description: "Looking for available riders nearby...",
+    });
+
+    // Simulate rider acceptance after 5 seconds
+    setTimeout(() => {
+      const riderNames = ['Alex', 'Maria', 'David', 'Sarah', 'Mike'];
+      const randomRider = riderNames[Math.floor(Math.random() * riderNames.length)];
+      
+      // Update order status
+      setOrders(prev => prev.map(order => 
+        order.id === newOrder.id 
+          ? { ...order, status: 'rider_accepted', rider: randomRider, eta: '12 min' }
+          : order
+      ));
+
+      // Show rider accepted notification
+      toast({
+        title: "Rider Found!",
+        description: `${randomRider} has accepted your delivery request`,
+      });
+
+      // Set active delivery for map notification
+      setActiveDelivery({
+        ...newOrder,
+        rider: randomRider,
+        eta: '12 min',
+        status: 'rider_accepted'
+      });
+
+      // After another 3 seconds, change to in progress
+      setTimeout(() => {
+        setOrders(prev => prev.map(order => 
+          order.id === newOrder.id 
+            ? { ...order, status: 'in_progress', eta: '8 min' }
+            : order
+        ));
+      }, 3000);
+    }, 5000);
   };
 
   if (activeTab === 'orders') {
@@ -151,9 +209,11 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 relative">
-      {/* Live Map */}
-      <LiveMap />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 relative flex flex-col">
+      {/* Live Map - takes full height minus bottom sheet */}
+      <div className="flex-1">
+        <LiveMap />
+      </div>
 
       {/* Delivery Notification */}
       {showNotification && activeDelivery && (
@@ -163,47 +223,13 @@ const Index = () => {
         />
       )}
 
-      {/* Bottom Action Buttons - side by side */}
-      <div className="absolute bottom-20 left-4 right-4 z-10">
-        <div className="grid grid-cols-2 gap-3">
-          <Button
-            onClick={() => setShowCallRider(true)}
-            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 rounded-xl shadow-lg flex items-center justify-center"
-          >
-            <Phone className="w-5 h-5 mr-2" />
-            📞 Call Rider
-          </Button>
-          
-          <Button
-            onClick={() => setShowRequestDelivery(true)}
-            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-4 rounded-xl shadow-lg flex items-center justify-center"
-          >
-            <Package className="w-5 h-5 mr-2" />
-            📦 Delivery
-          </Button>
-        </div>
-      </div>
-
-      {/* Actions - moved below main buttons */}
-      <div className="absolute bottom-32 left-4 right-4 z-10">
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg">
-          <h3 className="font-semibold text-gray-800 mb-3 text-center">Actions</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {quickActions.map((action) => (
-              <Button
-                key={action.id}
-                variant="outline"
-                size="sm"
-                className="flex items-center justify-center p-3 h-auto"
-                onClick={() => handleActionClick(action.id)}
-              >
-                <action.icon className="w-4 h-4 mr-2" />
-                <span className="text-xs">{action.label}</span>
-              </Button>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* Bottom Action Sheet */}
+      <BottomActionSheet 
+        onCallRider={() => setShowCallRider(true)}
+        onRequestDelivery={() => setShowRequestDelivery(true)}
+        onFindRider={() => setShowFindRider(true)}
+        onActionClick={handleActionClick}
+      />
 
       {/* Bottom Navigation */}
       <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
@@ -225,11 +251,20 @@ const Index = () => {
           setSelectedAction(null);
         }}
         onConfirm={(data) => {
-          setActiveDelivery({ type: 'detailed', actionType: selectedAction || 'delivery', ...data });
+          handleDeliveryConfirm(data);
           setShowRequestDelivery(false);
           setSelectedAction(null);
         }}
         selectedAction={selectedAction}
+      />
+
+      <FindRiderSheet 
+        isOpen={showFindRider} 
+        onClose={() => setShowFindRider(false)}
+        onConfirm={(data) => {
+          handleDeliveryConfirm(data);
+          setShowFindRider(false);
+        }}
       />
 
       <OrderDetails 

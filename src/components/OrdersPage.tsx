@@ -24,15 +24,38 @@ const OrdersPage = ({ orders, onOrderClick }: OrdersPageProps) => {
   const filteredOrders = orders.filter(order => {
     if (filter === 'all') return true;
     if (filter === 'delivered') return order.status === 'delivered';
+    if (filter === 'in_progress') return ['in_progress', 'waiting_for_rider', 'rider_accepted'].includes(order.status);
     return order.status === filter;
   });
 
-  // Sort to show in progress orders first
+  // Sort to show in progress orders first, then waiting orders
   const sortedOrders = [...filteredOrders].sort((a, b) => {
-    if (a.status === 'in_progress' && b.status !== 'in_progress') return -1;
-    if (b.status === 'in_progress' && a.status !== 'in_progress') return 1;
-    return 0;
+    const statusPriority = {
+      'in_progress': 1,
+      'rider_accepted': 2,
+      'waiting_for_rider': 3,
+      'delivered': 4,
+      'failed': 5
+    };
+    return (statusPriority[a.status] || 6) - (statusPriority[b.status] || 6);
   });
+
+  const getStatusDisplay = (order) => {
+    switch (order.status) {
+      case 'waiting_for_rider':
+        return { text: 'Looking for rider...', color: 'bg-yellow-500', animate: true };
+      case 'rider_accepted':
+        return { text: `${order.rider} accepted • ETA ${order.eta}`, color: 'bg-blue-500', animate: false };
+      case 'in_progress':
+        return { text: `In progress • ETA ${order.eta}`, color: 'bg-blue-500', animate: true };
+      case 'delivered':
+        return { text: `Delivered ${order.time}`, color: 'bg-green-500', animate: false };
+      case 'failed':
+        return { text: `Failed ${order.time}`, color: 'bg-red-500', animate: false };
+      default:
+        return { text: order.time, color: 'bg-gray-400', animate: false };
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
@@ -65,42 +88,39 @@ const OrdersPage = ({ orders, onOrderClick }: OrdersPageProps) => {
         </div>
 
         {/* Orders List */}
-        {sortedOrders.map((order) => (
-          <Card key={order.id} className="p-4 mb-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => onOrderClick(order)}>
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold">{order.title}</h3>
-                  {order.actionType && (
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                      {order.actionType}
-                    </span>
+        {sortedOrders.map((order) => {
+          const statusDisplay = getStatusDisplay(order);
+          return (
+            <Card key={order.id} className="p-4 mb-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => onOrderClick(order)}>
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold">{order.title}</h3>
+                    {order.actionType && (
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        {order.actionType}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center mt-1">
+                    <span className={`inline-block w-2 h-2 rounded-full mr-2 ${statusDisplay.color} ${statusDisplay.animate ? 'animate-pulse' : ''}`} />
+                    <p className="text-sm text-gray-600">
+                      {statusDisplay.text}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  {order.rating && (
+                    <>
+                      <Star className="w-4 h-4 text-yellow-500 mr-1" />
+                      <span className="text-sm">{order.rating}</span>
+                    </>
                   )}
                 </div>
-                <div className="flex items-center mt-1">
-                  <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
-                    order.status === 'delivered' ? 'bg-green-500' : 
-                    order.status === 'in_progress' ? 'bg-blue-500 animate-pulse' : 
-                    order.status === 'failed' ? 'bg-red-500' : 'bg-gray-400'
-                  }`} />
-                  <p className="text-sm text-gray-600">
-                    {order.status === 'delivered' ? `Delivered ${order.time}` : 
-                     order.status === 'in_progress' ? `In progress • ETA ${order.eta}` : 
-                     order.status === 'failed' ? `Failed ${order.time}` : order.time}
-                  </p>
-                </div>
               </div>
-              <div className="flex items-center">
-                {order.rating && (
-                  <>
-                    <Star className="w-4 h-4 text-yellow-500 mr-1" />
-                    <span className="text-sm">{order.rating}</span>
-                  </>
-                )}
-              </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
 
         {filteredOrders.length === 0 && (
           <div className="text-center py-8">
