@@ -1,11 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { MapPin, X, Calculator } from 'lucide-react';
+import { X, MapPin, Package, Clock, Utensils, ShoppingCart, FileText, Repeat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import AddressSelector from './AddressSelector';
+import { Card } from '@/components/ui/card';
 
 interface RequestDeliverySheetProps {
   isOpen: boolean;
@@ -16,195 +13,184 @@ interface RequestDeliverySheetProps {
 }
 
 const RequestDeliverySheet = ({ isOpen, onClose, onConfirm, selectedAction, lastDelivery }: RequestDeliverySheetProps) => {
-  const [pickup, setPickup] = useState('123 Main St, Your City');
+  const [pickup, setPickup] = useState('');
   const [dropoff, setDropoff] = useState('');
   const [description, setDescription] = useState('');
-  const [showPickupSelector, setShowPickupSelector] = useState(false);
-  const [showDropoffSelector, setShowDropoffSelector] = useState(false);
 
   useEffect(() => {
     if (selectedAction === 'last' && lastDelivery) {
-      setPickup(lastDelivery.pickup || '123 Main St, Your City');
+      // Pre-fill with last delivery data
+      setPickup(lastDelivery.pickup || '');
       setDropoff(lastDelivery.dropoff || '');
       setDescription(lastDelivery.title || '');
     } else {
-      setPickup('123 Main St, Your City');
+      // Clear form for new deliveries
+      setPickup('');
       setDropoff('');
       setDescription('');
-      
-      // Pre-fill based on action type
-      if (selectedAction === 'food') {
-        setDescription('Food delivery from restaurant');
-      } else if (selectedAction === 'groceries') {
-        setDescription('Grocery shopping and delivery');
-      } else if (selectedAction === 'errand') {
-        setDescription('Personal errand service');
-      }
     }
   }, [selectedAction, lastDelivery, isOpen]);
 
-  const handleConfirm = () => {
-    onConfirm({
-      pickup,
-      dropoff,
-      description,
-      fare: '$12.50',
-      actionType: selectedAction
-    });
-    if (selectedAction !== 'last') {
-      setDropoff('');
-      setDescription('');
+  const getActionConfig = () => {
+    switch (selectedAction) {
+      case 'food':
+        return {
+          title: 'Food Delivery',
+          icon: Utensils,
+          color: 'from-orange-500 to-red-500',
+          pickupLabel: 'Restaurant',
+          pickupPlaceholder: 'Enter restaurant name or address',
+          descriptionPlaceholder: 'Food items or order details'
+        };
+      case 'groceries':
+        return {
+          title: 'Grocery Delivery',
+          icon: ShoppingCart,
+          color: 'from-green-500 to-emerald-500',
+          pickupLabel: 'Store/Market',
+          pickupPlaceholder: 'Enter store or market name',
+          descriptionPlaceholder: 'Grocery items or shopping list'
+        };
+      case 'errand':
+        return {
+          title: 'Errand Service',
+          icon: FileText,
+          color: 'from-blue-500 to-indigo-500',
+          pickupLabel: 'Pickup Location',
+          pickupPlaceholder: 'Enter pickup address',
+          descriptionPlaceholder: 'Describe the errand task'
+        };
+      case 'last':
+        return {
+          title: 'Repeat Delivery',
+          icon: Repeat,
+          color: 'from-purple-500 to-pink-500',
+          pickupLabel: 'Pickup Location',
+          pickupPlaceholder: 'Enter pickup address',
+          descriptionPlaceholder: 'Delivery description'
+        };
+      default:
+        return {
+          title: 'Request Delivery',
+          icon: Package,
+          color: 'from-blue-500 to-green-500',
+          pickupLabel: 'Pickup Location',
+          pickupPlaceholder: 'Enter pickup address',
+          descriptionPlaceholder: 'Describe what needs to be delivered'
+        };
     }
+  };
+
+  const config = getActionConfig();
+  const IconComponent = config.icon;
+
+  const handleConfirm = () => {
+    const data = {
+      pickup: pickup.trim(),
+      dropoff: dropoff.trim(),
+      description: description.trim(),
+      actionType: selectedAction || 'delivery'
+    };
+
+    if (!data.pickup || !data.dropoff) {
+      return; // Add validation feedback if needed
+    }
+
+    onConfirm(data);
   };
 
   if (!isOpen) return null;
 
-  const getActionConfig = (action: string | null) => {
-    const configs = {
-      'last': { 
-        title: '🔄 Repeat Delivery', 
-        subtitle: 'Using your last delivery details',
-        icon: '🔄'
-      },
-      'food': { 
-        title: '🍕 Food Delivery', 
-        subtitle: 'Order food from restaurants',
-        icon: '🍕'
-      },
-      'groceries': { 
-        title: '🛒 Grocery Delivery', 
-        subtitle: 'Shop for groceries',
-        icon: '🛒'
-      },
-      'errand': { 
-        title: '📋 Errand Service', 
-        subtitle: 'Personal tasks and errands',
-        icon: '📋'
-      }
-    };
-    return action ? configs[action] || { title: '📦 Request Delivery', subtitle: 'Custom delivery service', icon: '📦' } : { title: '📦 Request Delivery', subtitle: 'Custom delivery service', icon: '📦' };
-  };
-
-  const actionConfig = getActionConfig(selectedAction);
-
-  const getPlaceholderText = (action: string | null) => {
-    const placeholders = {
-      'food': 'e.g., Pizza from Tony\'s, 2x Margherita, 1x Pepperoni',
-      'groceries': 'e.g., Milk, bread, eggs, apples from Fresh Market',
-      'errand': 'e.g., Pick up documents, pharmacy items, or packages'
-    };
-    return action ? placeholders[action] || 'What are you delivering?' : 'What are you delivering?';
-  };
-
   return (
-    <>
-      <div className="fixed inset-0 z-50 flex items-end">
-        <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-        <div className="relative w-full bg-white rounded-t-2xl p-6 max-h-[80vh] overflow-y-auto">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">{actionConfig.title}</h2>
-              <p className="text-sm text-blue-600">{actionConfig.subtitle}</p>
+    <div className="fixed inset-0 z-50 flex items-end">
+      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+      <div className="relative w-full bg-white rounded-t-2xl p-6 max-h-[80vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center">
+            <div className={`w-10 h-10 rounded-full bg-gradient-to-r ${config.color} flex items-center justify-center mr-3`}>
+              <IconComponent className="w-5 h-5 text-white" />
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="w-5 h-5" />
-            </Button>
+            <h2 className="text-xl font-bold text-gray-800">{config.title}</h2>
           </div>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
 
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="pickup">Pickup Location</Label>
-              <div className="flex mt-1">
-                <Input
-                  id="pickup"
-                  value={pickup}
-                  onChange={(e) => setPickup(e.target.value)}
-                  className="flex-1"
-                />
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="ml-2"
-                  onClick={() => setShowPickupSelector(true)}
-                >
-                  📍 Map
-                </Button>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="dropoff">Drop-off Location</Label>
-              <div className="flex mt-1">
-                <Input
-                  id="dropoff"
-                  value={dropoff}
-                  onChange={(e) => setDropoff(e.target.value)}
-                  placeholder="Enter destination address"
-                  className="flex-1"
-                />
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="ml-2"
-                  onClick={() => setShowDropoffSelector(true)}
-                >
-                  📍 Map
-                </Button>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                placeholder={getPlaceholderText(selectedAction)}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="mt-1"
-                rows={3}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {config.pickupLabel}
+            </label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                value={pickup}
+                onChange={(e) => setPickup(e.target.value)}
+                placeholder={config.pickupPlaceholder}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
+          </div>
 
-            {pickup && dropoff && (
-              <div className="bg-green-50 p-4 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-green-800">Fare Estimate</h3>
-                    <p className="text-sm text-green-700">Based on distance and demand</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-green-800">$12.50</p>
-                    <p className="text-xs text-green-600">~15 min</p>
-                  </div>
-                </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Drop-off Location
+            </label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                value={dropoff}
+                onChange={(e) => setDropoff(e.target.value)}
+                placeholder="Enter drop-off address"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Description
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={config.descriptionPlaceholder}
+              rows={3}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            />
+          </div>
+
+          {selectedAction === 'last' && lastDelivery && (
+            <Card className="p-3 bg-purple-50 border-purple-200">
+              <div className="flex items-center text-purple-700">
+                <Repeat className="w-4 h-4 mr-2" />
+                <span className="text-sm font-medium">Repeating: {lastDelivery.title}</span>
               </div>
-            )}
+            </Card>
+          )}
 
+          <div className="flex gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
             <Button
               onClick={handleConfirm}
-              disabled={!pickup || !dropoff}
-              className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3"
+              disabled={!pickup.trim() || !dropoff.trim()}
+              className={`flex-1 bg-gradient-to-r ${config.color} hover:opacity-90 text-white`}
             >
-              {selectedAction === 'last' ? 'Repeat This Delivery' : 'Confirm Delivery Request'}
+              Confirm Request
             </Button>
           </div>
         </div>
       </div>
-
-      <AddressSelector
-        isOpen={showPickupSelector}
-        onClose={() => setShowPickupSelector(false)}
-        onSelectAddress={(address) => setPickup(address)}
-        title="Select Pickup Location"
-      />
-
-      <AddressSelector
-        isOpen={showDropoffSelector}
-        onClose={() => setShowDropoffSelector(false)}
-        onSelectAddress={(address) => setDropoff(address)}
-        title="Select Drop-off Location"
-      />
-    </>
+    </div>
   );
 };
 

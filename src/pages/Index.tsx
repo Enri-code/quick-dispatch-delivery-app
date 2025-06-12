@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { MapPin, Phone, Package, Clock, Star, User, Home as HomeIcon, Eye, List } from 'lucide-react';
+import { MapPin, Phone, Package, Clock, Star, User, Home as HomeIcon, Eye, List, Map } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import CallRiderSheet from '@/components/CallRiderSheet';
@@ -148,8 +147,12 @@ const Index = () => {
             size="sm" 
             onClick={() => {
               setActiveTab('orders');
-              setSelectedOrder(orders.find(o => o.id === newOrder.id));
-              setShowOrderDetails(true);
+              // Set a timeout to allow tab change to complete before opening details
+              setTimeout(() => {
+                const updatedOrder = orders.find(o => o.id === newOrder.id);
+                setSelectedOrder({ ...newOrder, rider: randomRider, riderCompany: randomCompany, eta: '12 min', status: 'rider_accepted' });
+                setShowOrderDetails(true);
+              }, 100);
             }}
           >
             View
@@ -175,6 +178,31 @@ const Index = () => {
         ));
       }, 3000);
     }, 5000);
+  };
+
+  const handleLocateRider = () => {
+    // Switch to home tab to show map
+    setActiveTab('home');
+    setShowNotification(false);
+    
+    // You could implement actual rider tracking here
+    toast({
+      title: "Locating Rider",
+      description: "Following rider on map",
+    });
+  };
+
+  const handleViewInProgressOrders = () => {
+    setActiveTab('orders');
+    setShowNotification(false);
+    
+    // If there's an active delivery, show its details after switching tabs
+    if (inProgressDeliveries.length > 0) {
+      setTimeout(() => {
+        setSelectedOrder(inProgressDeliveries[0]);
+        setShowOrderDetails(true);
+      }, 100);
+    }
   };
 
   if (activeTab === 'orders') {
@@ -258,15 +286,15 @@ const Index = () => {
           <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center flex-1 min-w-0">
-                <div className="w-5 h-5 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center mr-2 flex-shrink-0">
-                  <MapPin className="w-3 h-3 text-white" />
+                <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center mr-2 flex-shrink-0">
+                  <MapPin className="w-2.5 h-2.5 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium text-gray-900 truncate">
                     {inProgressDeliveries[0].rider} • ETA {inProgressDeliveries[0].eta}
                   </p>
                   <p className="text-xs text-gray-600 truncate">
-                    📍 {inProgressDeliveries[0].pickup?.substring(0, 15)}... → {inProgressDeliveries[0].dropoff?.substring(0, 15)}...
+                    📍 {inProgressDeliveries[0].pickup?.substring(0, 12)}... → {inProgressDeliveries[0].dropoff?.substring(0, 12)}...
                   </p>
                 </div>
               </div>
@@ -274,7 +302,7 @@ const Index = () => {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  onClick={() => setActiveTab('orders')}
+                  onClick={handleViewInProgressOrders}
                   className="h-6 px-1.5 text-xs"
                 >
                   <List className="w-3 h-3" />
@@ -282,9 +310,10 @@ const Index = () => {
                 <Button 
                   variant="ghost" 
                   size="sm"
+                  onClick={handleLocateRider}
                   className="h-6 px-1.5 text-xs"
                 >
-                  <Eye className="w-3 h-3" />
+                  <Map className="w-3 h-3" />
                 </Button>
               </div>
             </div>
@@ -305,8 +334,8 @@ const Index = () => {
         />
       )}
 
-      {/* Fixed Bottom Action Sheet */}
-      <div className="bg-white border-t border-gray-200 shadow-lg">
+      {/* Fixed Bottom Action Sheet - with extra padding to avoid nav overlap */}
+      <div className="bg-white border-t border-gray-200 shadow-lg pb-2">
         <BottomActionSheet 
           onCallRider={() => setShowCallRider(true)}
           onRequestDelivery={() => setShowRequestDelivery(true)}
