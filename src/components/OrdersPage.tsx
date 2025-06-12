@@ -18,14 +18,12 @@ const OrdersPage = ({ orders, onOrderClick }: OrdersPageProps) => {
     { id: 'all', label: 'All' },
     { id: 'in_progress', label: 'In Progress' },
     { id: 'delivered', label: 'Completed' },
-    { id: 'cancelled', label: 'Cancelled' },
   ];
 
   const filteredOrders = orders.filter(order => {
     if (filter === 'all') return true;
     if (filter === 'delivered') return order.status === 'delivered';
     if (filter === 'in_progress') return ['in_progress', 'waiting_for_rider', 'rider_accepted'].includes(order.status);
-    if (filter === 'cancelled') return order.status === 'cancelled';
     return order.status === filter;
   });
 

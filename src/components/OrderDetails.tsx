@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { X, MapPin, Star, Phone, Clock, Eye } from 'lucide-react';
+import { X, MapPin, Star, Phone, Map } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
@@ -8,9 +8,11 @@ interface OrderDetailsProps {
   isOpen: boolean;
   onClose: () => void;
   order: any;
+  onCallRider?: () => void;
+  onViewRiderLocation?: () => void;
 }
 
-const OrderDetails = ({ isOpen, onClose, order }: OrderDetailsProps) => {
+const OrderDetails = ({ isOpen, onClose, order, onCallRider, onViewRiderLocation }: OrderDetailsProps) => {
   if (!isOpen || !order) return null;
 
   return (
@@ -67,11 +69,11 @@ const OrderDetails = ({ isOpen, onClose, order }: OrderDetailsProps) => {
                 </div>
                 {order.status === 'in_progress' && (
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={onCallRider}>
                       <Phone className="w-4 h-4" />
                     </Button>
-                    <Button variant="outline" size="sm">
-                      <Eye className="w-4 h-4" />
+                    <Button variant="outline" size="sm" onClick={onViewRiderLocation}>
+                      <Map className="w-4 h-4" />
                     </Button>
                   </div>
                 )}
@@ -99,18 +101,6 @@ const OrderDetails = ({ isOpen, onClose, order }: OrderDetailsProps) => {
               </div>
             </div>
           </Card>
-
-          {order.status === 'in_progress' && (
-            <Card className="p-4 bg-blue-50">
-              <div className="flex items-center">
-                <Clock className="w-5 h-5 text-blue-600 mr-3" />
-                <div>
-                  <p className="font-semibold text-blue-800">Estimated Arrival</p>
-                  <p className="text-sm text-blue-600">{order.eta} remaining</p>
-                </div>
-              </div>
-            </Card>
-          )}
         </div>
       </div>
     </div>

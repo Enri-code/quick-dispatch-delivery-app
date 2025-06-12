@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { MapPin, Phone, Package, Clock, Star, User, Home as HomeIcon, Eye, List, Map } from 'lucide-react';
+import { MapPin, Phone, Package, Clock, Star, User, Home as HomeIcon, Eye, List, Map, Plus, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import CallRiderSheet from '@/components/CallRiderSheet';
@@ -205,6 +206,22 @@ const Index = () => {
     }
   };
 
+  const handleCallRider = () => {
+    toast({
+      title: "Calling Rider",
+      description: "Connecting you with the rider...",
+    });
+  };
+
+  const handleViewRiderLocation = () => {
+    setActiveTab('home');
+    setShowOrderDetails(false);
+    toast({
+      title: "Tracking Rider",
+      description: "Following rider location on map",
+    });
+  };
+
   if (activeTab === 'orders') {
     return (
       <div className="h-screen flex flex-col overflow-hidden">
@@ -218,13 +235,27 @@ const Index = () => {
         <OrderDetails 
           isOpen={showOrderDetails} 
           onClose={() => setShowOrderDetails(false)} 
-          order={selectedOrder} 
+          order={selectedOrder}
+          onCallRider={handleCallRider}
+          onViewRiderLocation={handleViewRiderLocation}
         />
       </div>
     );
   }
 
   if (activeTab === 'profile') {
+    const recentRiders = [
+      { name: 'Alex', company: 'FastRide Co.', rating: 4.8, rides: 23 },
+      { name: 'Maria', company: 'QuickDelivery', rating: 5.0, rides: 15 },
+      { name: 'David', company: 'SpeedyDispatch', rating: 4.6, rides: 8 },
+    ];
+
+    const savedAddresses = [
+      { id: 1, label: 'Home', address: '123 Main St, Your City', type: 'home' },
+      { id: 2, label: 'Work', address: '456 Office Blvd, Downtown', type: 'work' },
+      { id: 3, label: 'Gym', address: '789 Fitness Ave, Uptown', type: 'other' },
+    ];
+
     return (
       <div className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-blue-50 to-green-50">
         <div className="flex-1 overflow-auto p-4 pt-8 pb-safe">
@@ -250,23 +281,66 @@ const Index = () => {
             </div>
           </Card>
 
+          <Card className="p-4 mb-4">
+            <h3 className="font-semibold mb-3">Recent Riders</h3>
+            <div className="space-y-3">
+              {recentRiders.map((rider, index) => (
+                <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-white font-semibold text-xs">
+                        {rider.name.charAt(0)}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{rider.name}</p>
+                      <p className="text-xs text-gray-600">{rider.company}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-center">
+                      <Star className="w-3 h-3 text-yellow-500 mr-1" />
+                      <span className="text-sm font-medium">{rider.rating}</span>
+                    </div>
+                    <p className="text-xs text-gray-600">{rider.rides} rides</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+
           <Card className="p-4">
-            <h3 className="font-semibold mb-3">Saved Addresses</h3>
-            <div className="space-y-2">
-              <div className="flex items-center">
-                <HomeIcon className="w-4 h-4 text-gray-500 mr-3" />
-                <div>
-                  <p className="font-medium">Home</p>
-                  <p className="text-sm text-gray-600">123 Main St, City</p>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold">Saved Addresses</h3>
+              <Button variant="outline" size="sm">
+                <Plus className="w-4 h-4 mr-1" />
+                Add
+              </Button>
+            </div>
+            <div className="space-y-3">
+              {savedAddresses.map((addr) => (
+                <div key={addr.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                  <div className="flex items-center flex-1 min-w-0">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                      {addr.type === 'home' ? <HomeIcon className="w-4 h-4 text-blue-600" /> : 
+                       addr.type === 'work' ? <Package className="w-4 h-4 text-blue-600" /> : 
+                       <MapPin className="w-4 h-4 text-blue-600" />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm">{addr.label}</p>
+                      <p className="text-xs text-gray-600 truncate">{addr.address}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-1 ml-2 flex-shrink-0">
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center">
-                <Package className="w-4 h-4 text-gray-500 mr-3" />
-                <div>
-                  <p className="font-medium">Work</p>
-                  <p className="text-sm text-gray-600">456 Office Blvd, City</p>
-                </div>
-              </div>
+              ))}
             </div>
           </Card>
         </div>
@@ -294,7 +368,7 @@ const Index = () => {
                     {inProgressDeliveries[0].rider} • ETA {inProgressDeliveries[0].eta}
                   </p>
                   <p className="text-xs text-gray-600 truncate">
-                    📍 {inProgressDeliveries[0].pickup?.substring(0, 12)}... → {inProgressDeliveries[0].dropoff?.substring(0, 12)}...
+                    📍 {inProgressDeliveries[0].pickup?.substring(0, 8)}... → {inProgressDeliveries[0].dropoff?.substring(0, 8)}...
                   </p>
                 </div>
               </div>
@@ -334,14 +408,12 @@ const Index = () => {
         />
       )}
 
-      {/* Fixed Bottom Action Sheet - with extra padding to avoid nav overlap */}
-      <div className="bg-white border-t border-gray-200 shadow-lg pb-2">
-        <BottomActionSheet 
-          onCallRider={() => setShowCallRider(true)}
-          onRequestDelivery={() => setShowRequestDelivery(true)}
-          onActionClick={handleActionClick}
-        />
-      </div>
+      {/* Fixed Bottom Action Sheet */}
+      <BottomActionSheet 
+        onCallRider={() => setShowCallRider(true)}
+        onRequestDelivery={() => setShowRequestDelivery(true)}
+        onActionClick={handleActionClick}
+      />
 
       {/* Bottom Navigation with safe area */}
       <div className="pb-safe">
@@ -411,7 +483,9 @@ const Index = () => {
       <OrderDetails 
         isOpen={showOrderDetails} 
         onClose={() => setShowOrderDetails(false)} 
-        order={selectedOrder} 
+        order={selectedOrder}
+        onCallRider={handleCallRider}
+        onViewRiderLocation={handleViewRiderLocation}
       />
     </div>
   );
