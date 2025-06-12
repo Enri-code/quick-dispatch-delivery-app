@@ -18,11 +18,11 @@ const BottomActionSheet = ({ onCallRider, onRequestDelivery, onActionClick }: Bo
   ];
 
   return (
-    <div className="bg-white border-t border-gray-200 max-h-64 overflow-y-auto">
-      <div className="px-3 py-2">
+    <div className="bg-white border-t border-gray-200 max-h-80 overflow-y-auto">
+      <div className="px-3 py-3">
         {/* Quick Actions */}
         <h3 className="text-xs font-semibold text-gray-700 mb-2">Quick Actions</h3>
-        <div className="grid grid-cols-4 gap-2 mb-3">
+        <div className="grid grid-cols-4 gap-2 mb-4">
           {quickActions.map((action) => (
             <button
               key={action.id}
@@ -38,7 +38,7 @@ const BottomActionSheet = ({ onCallRider, onRequestDelivery, onActionClick }: Bo
         </div>
 
         {/* Main Action Buttons */}
-        <div className="grid grid-cols-2 gap-2 pb-2">
+        <div className="grid grid-cols-2 gap-3">
           <Button
             onClick={onCallRider}
             className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-lg shadow-md flex items-center justify-center space-x-2"

@@ -395,7 +395,7 @@ const Index = () => {
         </div>
       )}
 
-      {/* Live Map - takes remaining space above bottom sheet */}
+      {/* Live Map - takes remaining space above bottom sheets */}
       <div className="flex-1 relative">
         <LiveMap onRiderClick={handleRiderClick} />
       </div>
@@ -408,15 +408,17 @@ const Index = () => {
         />
       )}
 
-      {/* Fixed Bottom Action Sheet */}
-      <BottomActionSheet 
-        onCallRider={() => setShowCallRider(true)}
-        onRequestDelivery={() => setShowRequestDelivery(true)}
-        onActionClick={handleActionClick}
-      />
+      {/* Fixed Bottom Action Sheet - positioned above bottom navigation */}
+      <div className="flex-shrink-0">
+        <BottomActionSheet 
+          onCallRider={() => setShowCallRider(true)}
+          onRequestDelivery={() => setShowRequestDelivery(true)}
+          onActionClick={handleActionClick}
+        />
+      </div>
 
       {/* Bottom Navigation with safe area */}
-      <div className="pb-safe">
+      <div className="pb-safe flex-shrink-0">
         <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
 
