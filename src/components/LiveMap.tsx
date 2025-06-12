@@ -49,16 +49,12 @@ const LiveMap = ({ onRiderClick }: LiveMapProps) => {
             <div className={`w-8 h-8 ${rider.available ? 'bg-green-500' : 'bg-gray-400'} rounded-full border-2 border-white shadow-lg flex items-center justify-center transition-transform hover:scale-110`}>
               <MapPin className="w-4 h-4 text-white" />
             </div>
-            <div className="absolute -bottom-20 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-lg min-w-24 text-center">
+            <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-lg min-w-20 text-center">
               <p className="text-xs font-medium text-gray-800">{rider.name}</p>
-              <p className="text-xs text-gray-500">{rider.company}</p>
               <div className="flex items-center justify-center mt-1">
                 <Star className="w-3 h-3 text-yellow-500 mr-1" />
                 <span className="text-xs text-gray-600">{rider.rating}</span>
               </div>
-              <p className={`text-xs font-medium ${rider.available ? 'text-green-600' : 'text-gray-500'}`}>
-                {rider.available ? rider.eta : 'Busy'}
-              </p>
             </div>
           </div>
         </div>

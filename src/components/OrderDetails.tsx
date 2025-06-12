@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { X, MapPin, Star, Phone, Clock } from 'lucide-react';
+import { X, MapPin, Star, Phone, Clock, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
@@ -51,7 +51,7 @@ const OrderDetails = ({ isOpen, onClose, order }: OrderDetailsProps) => {
           {order.rider && (
             <Card className="p-4">
               <h4 className="font-semibold mb-3">Rider Information</h4>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center">
                   <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center mr-3">
                     <span className="text-white font-semibold text-sm">
@@ -60,13 +60,20 @@ const OrderDetails = ({ isOpen, onClose, order }: OrderDetailsProps) => {
                   </div>
                   <div>
                     <p className="font-medium">{order.rider}</p>
-                    <p className="text-sm text-gray-600">Delivery Partner</p>
+                    {order.riderCompany && (
+                      <p className="text-sm text-gray-600">{order.riderCompany}</p>
+                    )}
                   </div>
                 </div>
                 {order.status === 'in_progress' && (
-                  <Button variant="outline" size="sm">
-                    <Phone className="w-4 h-4" />
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Phone className="w-4 h-4" />
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                  </div>
                 )}
               </div>
             </Card>

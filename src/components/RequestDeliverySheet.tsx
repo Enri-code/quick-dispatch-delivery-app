@@ -31,6 +31,15 @@ const RequestDeliverySheet = ({ isOpen, onClose, onConfirm, selectedAction, last
       setPickup('123 Main St, Your City');
       setDropoff('');
       setDescription('');
+      
+      // Pre-fill based on action type
+      if (selectedAction === 'food') {
+        setDescription('Food delivery from restaurant');
+      } else if (selectedAction === 'groceries') {
+        setDescription('Grocery shopping and delivery');
+      } else if (selectedAction === 'errand') {
+        setDescription('Personal errand service');
+      }
     }
   }, [selectedAction, lastDelivery, isOpen]);
 
@@ -50,14 +59,41 @@ const RequestDeliverySheet = ({ isOpen, onClose, onConfirm, selectedAction, last
 
   if (!isOpen) return null;
 
-  const getActionLabel = (action: string | null) => {
-    const labels = {
-      'last': 'Repeat Delivery',
-      'food': 'Food Delivery',
-      'groceries': 'Grocery Delivery',
-      'errand': 'Errand Service'
+  const getActionConfig = (action: string | null) => {
+    const configs = {
+      'last': { 
+        title: '🔄 Repeat Delivery', 
+        subtitle: 'Using your last delivery details',
+        icon: '🔄'
+      },
+      'food': { 
+        title: '🍕 Food Delivery', 
+        subtitle: 'Order food from restaurants',
+        icon: '🍕'
+      },
+      'groceries': { 
+        title: '🛒 Grocery Delivery', 
+        subtitle: 'Shop for groceries',
+        icon: '🛒'
+      },
+      'errand': { 
+        title: '📋 Errand Service', 
+        subtitle: 'Personal tasks and errands',
+        icon: '📋'
+      }
     };
-    return action ? labels[action] || 'Delivery' : 'Delivery';
+    return action ? configs[action] || { title: '📦 Request Delivery', subtitle: 'Custom delivery service', icon: '📦' } : { title: '📦 Request Delivery', subtitle: 'Custom delivery service', icon: '📦' };
+  };
+
+  const actionConfig = getActionConfig(selectedAction);
+
+  const getPlaceholderText = (action: string | null) => {
+    const placeholders = {
+      'food': 'e.g., Pizza from Tony\'s, 2x Margherita, 1x Pepperoni',
+      'groceries': 'e.g., Milk, bread, eggs, apples from Fresh Market',
+      'errand': 'e.g., Pick up documents, pharmacy items, or packages'
+    };
+    return action ? placeholders[action] || 'What are you delivering?' : 'What are you delivering?';
   };
 
   return (
@@ -67,10 +103,8 @@ const RequestDeliverySheet = ({ isOpen, onClose, onConfirm, selectedAction, last
         <div className="relative w-full bg-white rounded-t-2xl p-6 max-h-[80vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-xl font-bold text-gray-800">📦 Request Delivery</h2>
-              {selectedAction && (
-                <p className="text-sm text-blue-600">{getActionLabel(selectedAction)}</p>
-              )}
+              <h2 className="text-xl font-bold text-gray-800">{actionConfig.title}</h2>
+              <p className="text-sm text-blue-600">{actionConfig.subtitle}</p>
             </div>
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="w-5 h-5" />
@@ -123,7 +157,7 @@ const RequestDeliverySheet = ({ isOpen, onClose, onConfirm, selectedAction, last
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
-                placeholder="What are you delivering?"
+                placeholder={getPlaceholderText(selectedAction)}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="mt-1"
@@ -151,7 +185,7 @@ const RequestDeliverySheet = ({ isOpen, onClose, onConfirm, selectedAction, last
               disabled={!pickup || !dropoff}
               className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3"
             >
-              Confirm Delivery Request
+              {selectedAction === 'last' ? 'Repeat This Delivery' : 'Confirm Delivery Request'}
             </Button>
           </div>
         </div>

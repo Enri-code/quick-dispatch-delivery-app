@@ -110,6 +110,7 @@ const Index = () => {
       rating: null,
       status: 'waiting_for_rider',
       rider: null,
+      riderCompany: null,
       eta: null,
       pickup: data.pickup,
       dropoff: data.dropoff,
@@ -127,25 +128,40 @@ const Index = () => {
     // Simulate rider acceptance after 5 seconds
     setTimeout(() => {
       const riderNames = ['Alex', 'Maria', 'David', 'Sarah', 'Mike'];
+      const riderCompanies = ['FastRide Co.', 'QuickDelivery', 'SpeedyDispatch', 'Independent', 'ExpressRiders'];
       const randomRider = riderNames[Math.floor(Math.random() * riderNames.length)];
+      const randomCompany = riderCompanies[Math.floor(Math.random() * riderCompanies.length)];
       
       // Update order status
       setOrders(prev => prev.map(order => 
         order.id === newOrder.id 
-          ? { ...order, status: 'rider_accepted', rider: randomRider, eta: '12 min' }
+          ? { ...order, status: 'rider_accepted', rider: randomRider, riderCompany: randomCompany, eta: '12 min' }
           : order
       ));
 
-      // Show rider accepted notification
+      // Show rider accepted notification with view button
       toast({
         title: "Rider Found!",
         description: `${randomRider} has accepted your delivery request`,
+        action: (
+          <Button 
+            size="sm" 
+            onClick={() => {
+              setActiveTab('orders');
+              setSelectedOrder(orders.find(o => o.id === newOrder.id));
+              setShowOrderDetails(true);
+            }}
+          >
+            View
+          </Button>
+        ),
       });
 
       // Set active delivery for map notification
       setActiveDelivery({
         ...newOrder,
         rider: randomRider,
+        riderCompany: randomCompany,
         eta: '12 min',
         status: 'rider_accepted'
       });
@@ -183,7 +199,7 @@ const Index = () => {
   if (activeTab === 'profile') {
     return (
       <div className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-blue-50 to-green-50">
-        <div className="flex-1 overflow-auto p-4 pt-8">
+        <div className="flex-1 overflow-auto p-4 pt-8 pb-safe">
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <User className="w-10 h-10 text-white" />
@@ -233,43 +249,42 @@ const Index = () => {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-blue-50 to-green-50 relative">
+      {/* Safe area padding for mobile browsers */}
+      <div className="pt-safe" />
+      
       {/* Delivery In Progress Notification */}
       {inProgressDeliveries.length > 0 && (
-        <div className="absolute top-4 left-4 right-4 z-50">
-          <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-3">
+        <div className="absolute top-4 left-2 right-2 z-50 mt-safe">
+          <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center flex-1">
-                <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center mr-2">
+              <div className="flex items-center flex-1 min-w-0">
+                <div className="w-5 h-5 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center mr-2 flex-shrink-0">
                   <MapPin className="w-3 h-3 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-xs font-medium text-gray-900 truncate">
                     {inProgressDeliveries[0].rider} • ETA {inProgressDeliveries[0].eta}
                   </p>
                   <p className="text-xs text-gray-600 truncate">
-                    📍 {inProgressDeliveries[0].pickup} → {inProgressDeliveries[0].dropoff}
+                    📍 {inProgressDeliveries[0].pickup?.substring(0, 15)}... → {inProgressDeliveries[0].dropoff?.substring(0, 15)}...
                   </p>
                 </div>
               </div>
-              <div className="flex gap-1 ml-2">
+              <div className="flex gap-1 ml-1 flex-shrink-0">
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  onClick={() => {
-                    setActiveTab('orders');
-                  }}
-                  className="h-6 px-2 text-xs"
+                  onClick={() => setActiveTab('orders')}
+                  className="h-6 px-1.5 text-xs"
                 >
-                  <List className="w-3 h-3 mr-1" />
-                  All
+                  <List className="w-3 h-3" />
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="h-6 px-2 text-xs"
+                  className="h-6 px-1.5 text-xs"
                 >
-                  <Eye className="w-3 h-3 mr-1" />
-                  Map
+                  <Eye className="w-3 h-3" />
                 </Button>
               </div>
             </div>
@@ -299,8 +314,10 @@ const Index = () => {
         />
       </div>
 
-      {/* Bottom Navigation */}
-      <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      {/* Bottom Navigation with safe area */}
+      <div className="pb-safe">
+        <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      </div>
 
       {/* Bottom Sheets */}
       <CallRiderSheet 
