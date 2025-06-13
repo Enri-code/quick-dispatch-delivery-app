@@ -10,9 +10,10 @@ interface OrderDetailsProps {
   order: any;
   onCallRider?: () => void;
   onViewRiderLocation?: () => void;
+  onRiderClick?: (rider: any) => void;
 }
 
-const OrderDetails = ({ isOpen, onClose, order, onCallRider, onViewRiderLocation }: OrderDetailsProps) => {
+const OrderDetails = ({ isOpen, onClose, order, onCallRider, onViewRiderLocation, onRiderClick }: OrderDetailsProps) => {
   if (!isOpen || !order) return null;
 
   return (
@@ -54,7 +55,15 @@ const OrderDetails = ({ isOpen, onClose, order, onCallRider, onViewRiderLocation
             <Card className="p-4">
               <h4 className="font-semibold mb-3">Rider Information</h4>
               <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center">
+                <button
+                  onClick={() => onRiderClick?.({ 
+                    name: order.rider, 
+                    company: order.riderCompany, 
+                    rating: 4.8, 
+                    eta: order.eta 
+                  })}
+                  className="flex items-center hover:bg-gray-50 rounded p-2 -ml-2"
+                >
                   <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center mr-3">
                     <span className="text-white font-semibold text-sm">
                       {order.rider.charAt(0)}
@@ -66,14 +75,14 @@ const OrderDetails = ({ isOpen, onClose, order, onCallRider, onViewRiderLocation
                       <p className="text-sm text-gray-600">{order.riderCompany}</p>
                     )}
                   </div>
-                </div>
+                </button>
                 {order.status === 'in_progress' && (
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={onCallRider}>
                       <Phone className="w-4 h-4" />
                     </Button>
                     <Button variant="outline" size="sm" onClick={onViewRiderLocation}>
-                      <Map className="w-4 h-4" />
+                      <MapPin className="w-4 h-4" />
                     </Button>
                   </div>
                 )}

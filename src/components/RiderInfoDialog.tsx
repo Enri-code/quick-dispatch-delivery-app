@@ -1,0 +1,110 @@
+
+import React from 'react';
+import { Star, X, Phone, MapPin, Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+
+interface RiderInfoDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  rider: any;
+}
+
+const RiderInfoDialog = ({ isOpen, onClose, rider }: RiderInfoDialogProps) => {
+  if (!rider) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-lg">
+                {rider.name?.charAt(0)}
+              </span>
+            </div>
+            <div>
+              <div className="text-lg font-bold">{rider.name}</div>
+              <div className="text-sm font-normal text-gray-600">{rider.company}</div>
+            </div>
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="bg-yellow-50 p-3 rounded-lg">
+              <div className="flex items-center justify-center mb-1">
+                <Star className="w-4 h-4 text-yellow-500 mr-1" />
+                <span className="font-bold text-lg">{rider.rating}</span>
+              </div>
+              <p className="text-xs text-gray-600">Rating</p>
+            </div>
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <p className="font-bold text-lg">{rider.rides || 47}</p>
+              <p className="text-xs text-gray-600">Rides</p>
+            </div>
+            <div className="bg-green-50 p-3 rounded-lg">
+              <p className="font-bold text-lg">{rider.eta || '5 min'}</p>
+              <p className="text-xs text-gray-600">ETA</p>
+            </div>
+          </div>
+
+          {/* Status */}
+          <div className="bg-green-50 p-3 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse" />
+                <span className="text-sm font-medium text-green-800">Available</span>
+              </div>
+              <div className="flex items-center text-sm text-green-700">
+                <MapPin className="w-4 h-4 mr-1" />
+                <span>Nearby</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div>
+            <h3 className="font-semibold mb-2">Recent Activity</h3>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                <div className="flex items-center">
+                  <Calendar className="w-4 h-4 text-gray-500 mr-2" />
+                  <span className="text-sm">Last delivery</span>
+                </div>
+                <span className="text-sm text-gray-600">2 hours ago</span>
+              </div>
+              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                <div className="flex items-center">
+                  <Star className="w-4 h-4 text-yellow-500 mr-2" />
+                  <span className="text-sm">Average rating this month</span>
+                </div>
+                <span className="text-sm font-medium">{rider.rating}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex-1">
+              <Phone className="w-4 h-4 mr-2" />
+              Call
+            </Button>
+            <Button className="flex-1 bg-gradient-to-r from-blue-500 to-green-500">
+              <MapPin className="w-4 h-4 mr-2" />
+              Track
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default RiderInfoDialog;

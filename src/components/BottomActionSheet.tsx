@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Phone, Package, Clock, User, Repeat, Utensils, ShoppingCart, FileText } from 'lucide-react';
+import { Phone, Package, Clock, User, Repeat, Utensils, ShoppingCart, FileText, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface BottomActionSheetProps {
@@ -20,25 +20,8 @@ const BottomActionSheet = ({ onCallRider, onRequestDelivery, onActionClick }: Bo
   return (
     <div className="bg-white border-t border-gray-200 max-h-80 overflow-y-auto">
       <div className="px-3 py-3">
-        {/* Quick Actions */}
-        <h3 className="text-xs font-semibold text-gray-700 mb-2">Quick Actions</h3>
-        <div className="grid grid-cols-4 gap-2 mb-4">
-          {quickActions.map((action) => (
-            <button
-              key={action.id}
-              className="flex flex-col items-center p-1.5 rounded-lg hover:bg-gray-50 transition-colors"
-              onClick={() => onActionClick(action.id)}
-            >
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center mb-1 ${action.color}`}>
-                <action.icon className="w-3.5 h-3.5 text-white" />
-              </div>
-              <span className="text-xs font-medium text-gray-700 text-center leading-tight">{action.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Main Action Buttons */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Main Action Buttons - Now on top */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
           <Button
             onClick={onCallRider}
             className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-lg shadow-md flex items-center justify-center space-x-2"
@@ -54,6 +37,23 @@ const BottomActionSheet = ({ onCallRider, onRequestDelivery, onActionClick }: Bo
             <Package className="w-4 h-4" />
             <span className="font-medium text-sm">New Delivery</span>
           </Button>
+        </div>
+
+        {/* Quick Actions */}
+        <h3 className="text-xs font-semibold text-gray-700 mb-2">Quick Actions</h3>
+        <div className="grid grid-cols-4 gap-2">
+          {quickActions.map((action) => (
+            <button
+              key={action.id}
+              className="flex flex-col items-center p-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+              onClick={() => onActionClick(action.id)}
+            >
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center mb-1 ${action.color}`}>
+                <action.icon className="w-3.5 h-3.5 text-white" />
+              </div>
+              <span className="text-xs font-medium text-gray-700 text-center leading-tight">{action.label}</span>
+            </button>
+          ))}
         </div>
       </div>
     </div>

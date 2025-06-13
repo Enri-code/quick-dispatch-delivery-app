@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { MapPin, Phone, Package, Clock, Star, User, Home as HomeIcon, Eye, List, Map, Plus, Edit, Trash2 } from 'lucide-react';
+import { MapPin, Phone, Package, Clock, Star, User, Home as HomeIcon, Eye, List, Map, Plus, Edit, Trash2, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import CallRiderSheet from '@/components/CallRiderSheet';
@@ -14,6 +13,8 @@ import BottomActionSheet from '@/components/BottomActionSheet';
 import RiderDialog from '@/components/RiderDialog';
 import RiderArrivedSheet from '@/components/RiderArrivedSheet';
 import RateDeliverySheet from '@/components/RateDeliverySheet';
+import RiderInfoDialog from '@/components/RiderInfoDialog';
+import AddressManager from '@/components/AddressManager';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -24,11 +25,17 @@ const Index = () => {
   const [showRiderDialog, setShowRiderDialog] = useState(false);
   const [showRiderArrived, setShowRiderArrived] = useState(false);
   const [showRateDelivery, setShowRateDelivery] = useState(false);
+  const [showRiderInfo, setShowRiderInfo] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedRider, setSelectedRider] = useState(null);
   const [activeDelivery, setActiveDelivery] = useState(null);
   const [showNotification, setShowNotification] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
+  const [savedAddresses, setSavedAddresses] = useState([
+    { id: 1, label: 'Home', address: '123 Main St, Your City', type: 'home' },
+    { id: 2, label: 'Work', address: '456 Office Blvd, Downtown', type: 'work' },
+    { id: 3, label: 'Gym', address: '789 Fitness Ave, Uptown', type: 'other' },
+  ]);
   const [orders, setOrders] = useState([
     { 
       id: 1, 
@@ -90,6 +97,11 @@ const Index = () => {
   const handleRiderClick = (rider) => {
     setSelectedRider(rider);
     setShowRiderDialog(true);
+  };
+
+  const handleRiderInfoClick = (rider) => {
+    setSelectedRider(rider);
+    setShowRiderInfo(true);
   };
 
   const handleActionClick = (actionId) => {
@@ -229,6 +241,7 @@ const Index = () => {
           <OrdersPage 
             orders={orders} 
             onOrderClick={(order) => { setSelectedOrder(order); setShowOrderDetails(true); }}
+            onRiderClick={handleRiderInfoClick}
           />
         </div>
         <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
@@ -238,6 +251,12 @@ const Index = () => {
           order={selectedOrder}
           onCallRider={handleCallRider}
           onViewRiderLocation={handleViewRiderLocation}
+          onRiderClick={handleRiderInfoClick}
+        />
+        <RiderInfoDialog
+          isOpen={showRiderInfo}
+          onClose={() => setShowRiderInfo(false)}
+          rider={selectedRider}
         />
       </div>
     );
@@ -248,12 +267,6 @@ const Index = () => {
       { name: 'Alex', company: 'FastRide Co.', rating: 4.8, rides: 23 },
       { name: 'Maria', company: 'QuickDelivery', rating: 5.0, rides: 15 },
       { name: 'David', company: 'SpeedyDispatch', rating: 4.6, rides: 8 },
-    ];
-
-    const savedAddresses = [
-      { id: 1, label: 'Home', address: '123 Main St, Your City', type: 'home' },
-      { id: 2, label: 'Work', address: '456 Office Blvd, Downtown', type: 'work' },
-      { id: 3, label: 'Gym', address: '789 Fitness Ave, Uptown', type: 'other' },
     ];
 
     return (
@@ -285,7 +298,11 @@ const Index = () => {
             <h3 className="font-semibold mb-3">Recent Riders</h3>
             <div className="space-y-3">
               {recentRiders.map((rider, index) => (
-                <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                <button
+                  key={index}
+                  onClick={() => handleRiderInfoClick(rider)}
+                  className="w-full flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center mr-3">
                       <span className="text-white font-semibold text-xs">
@@ -304,47 +321,24 @@ const Index = () => {
                     </div>
                     <p className="text-xs text-gray-600">{rider.rides} rides</p>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </Card>
 
           <Card className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold">Saved Addresses</h3>
-              <Button variant="outline" size="sm">
-                <Plus className="w-4 h-4 mr-1" />
-                Add
-              </Button>
-            </div>
-            <div className="space-y-3">
-              {savedAddresses.map((addr) => (
-                <div key={addr.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                  <div className="flex items-center flex-1 min-w-0">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                      {addr.type === 'home' ? <HomeIcon className="w-4 h-4 text-blue-600" /> : 
-                       addr.type === 'work' ? <Package className="w-4 h-4 text-blue-600" /> : 
-                       <MapPin className="w-4 h-4 text-blue-600" />}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-sm">{addr.label}</p>
-                      <p className="text-xs text-gray-600 truncate">{addr.address}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-1 ml-2 flex-shrink-0">
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                      <Edit className="w-3 h-3" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <AddressManager 
+              addresses={savedAddresses}
+              onAddressChange={setSavedAddresses}
+            />
           </Card>
         </div>
         <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        <RiderInfoDialog
+          isOpen={showRiderInfo}
+          onClose={() => setShowRiderInfo(false)}
+          rider={selectedRider}
+        />
       </div>
     );
   }
@@ -389,6 +383,19 @@ const Index = () => {
                 >
                   <Map className="w-3 h-3" />
                 </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => handleRiderInfoClick({ 
+                    name: inProgressDeliveries[0].rider, 
+                    company: inProgressDeliveries[0].riderCompany, 
+                    rating: 4.8, 
+                    eta: inProgressDeliveries[0].eta 
+                  })}
+                  className="h-6 px-1.5 text-xs"
+                >
+                  <Info className="w-3 h-3" />
+                </Button>
               </div>
             </div>
           </div>
@@ -396,7 +403,7 @@ const Index = () => {
       )}
 
       {/* Live Map - takes remaining space above bottom sheets */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative overflow-hidden">
         <LiveMap onRiderClick={handleRiderClick} />
       </div>
 
@@ -472,7 +479,6 @@ const Index = () => {
         onClose={() => setShowRateDelivery(false)}
         delivery={selectedOrder}
         onSubmitRating={(rating) => {
-          // Update order with rating
           setOrders(prev => prev.map(order => 
             order.id === selectedOrder?.id 
               ? { ...order, status: 'delivered', rating }
@@ -488,6 +494,13 @@ const Index = () => {
         order={selectedOrder}
         onCallRider={handleCallRider}
         onViewRiderLocation={handleViewRiderLocation}
+        onRiderClick={handleRiderInfoClick}
+      />
+
+      <RiderInfoDialog
+        isOpen={showRiderInfo}
+        onClose={() => setShowRiderInfo(false)}
+        rider={selectedRider}
       />
     </div>
   );

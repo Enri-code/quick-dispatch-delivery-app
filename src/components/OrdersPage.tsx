@@ -8,10 +8,12 @@ import OrdersReport from '@/components/OrdersReport';
 interface OrdersPageProps {
   orders: any[];
   onOrderClick: (order: any) => void;
+  onRiderClick?: (rider: any) => void;
 }
 
-const OrdersPage = ({ orders, onOrderClick }: OrdersPageProps) => {
+const OrdersPage = ({ orders, onOrderClick, onRiderClick }: OrdersPageProps) => {
   const [filter, setFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
   const [showReport, setShowReport] = useState(false);
 
   const filters = [
@@ -20,11 +22,25 @@ const OrdersPage = ({ orders, onOrderClick }: OrdersPageProps) => {
     { id: 'delivered', label: 'Completed' },
   ];
 
+  const categoryFilters = [
+    { id: 'all', label: 'All Categories' },
+    { id: 'food', label: 'Food' },
+    { id: 'groceries', label: 'Groceries' },
+    { id: 'errand', label: 'Errand' },
+    { id: 'custom', label: 'Custom' },
+  ];
+
   const filteredOrders = orders.filter(order => {
-    if (filter === 'all') return true;
-    if (filter === 'delivered') return order.status === 'delivered';
-    if (filter === 'in_progress') return ['in_progress', 'waiting_for_rider', 'rider_accepted'].includes(order.status);
-    return order.status === filter;
+    // Status filter
+    if (filter !== 'all') {
+      if (filter === 'delivered' && order.status !== 'delivered') return false;
+      if (filter === 'in_progress' && !['in_progress', 'waiting_for_rider', 'rider_accepted'].includes(order.status)) return false;
+    }
+    
+    // Category filter
+    if (categoryFilter !== 'all' && order.actionType !== categoryFilter) return false;
+    
+    return true;
   });
 
   // Sort to show in progress orders first, then waiting orders
@@ -34,7 +50,6 @@ const OrdersPage = ({ orders, onOrderClick }: OrdersPageProps) => {
       'rider_accepted': 2,
       'waiting_for_rider': 3,
       'delivered': 4,
-      'cancelled': 5
     };
     return (statusPriority[a.status] || 6) - (statusPriority[b.status] || 6);
   });
@@ -49,8 +64,6 @@ const OrdersPage = ({ orders, onOrderClick }: OrdersPageProps) => {
         return { text: `In progress • ETA ${order.eta}`, color: 'bg-blue-500', animate: true };
       case 'delivered':
         return { text: `Delivered ${order.time}`, color: 'bg-green-500', animate: false };
-      case 'cancelled':
-        return { text: `Cancelled ${order.time}`, color: 'bg-red-500', animate: false };
       default:
         return { text: order.time, color: 'bg-gray-400', animate: false };
     }
@@ -71,8 +84,8 @@ const OrdersPage = ({ orders, onOrderClick }: OrdersPageProps) => {
           </Button>
         </div>
 
-        {/* Filters */}
-        <div className="flex gap-2 mb-6 overflow-x-auto">
+        {/* Status Filters */}
+        <div className="flex gap-2 mb-3 overflow-x-auto">
           {filters.map((filterOption) => (
             <Button
               key={filterOption.id}
@@ -82,6 +95,22 @@ const OrdersPage = ({ orders, onOrderClick }: OrdersPageProps) => {
               className="whitespace-nowrap"
             >
               {filterOption.label}
+            </Button>
+          ))}
+        </div>
+
+        {/* Category Filters */}
+        <div className="flex gap-2 mb-6 overflow-x-auto">
+          {categoryFilters.map((categoryOption) => (
+            <Button
+              key={categoryOption.id}
+              variant={categoryFilter === categoryOption.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCategoryFilter(categoryOption.id)}
+              className="whitespace-nowrap"
+            >
+              <Filter className="w-3 h-3 mr-1" />
+              {categoryOption.label}
             </Button>
           ))}
         </div>
@@ -107,6 +136,29 @@ const OrdersPage = ({ orders, onOrderClick }: OrdersPageProps) => {
                       {statusDisplay.text}
                     </p>
                   </div>
+                  {order.rider && (
+                    <div className="flex items-center mt-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRiderClick?.({ 
+                            name: order.rider, 
+                            company: order.riderCompany, 
+                            rating: 4.8, 
+                            eta: order.eta 
+                          });
+                        }}
+                        className="flex items-center hover:bg-gray-100 rounded p-1 -ml-1"
+                      >
+                        <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center mr-2">
+                          <span className="text-white font-semibold text-xs">
+                            {order.rider.charAt(0)}
+                          </span>
+                        </div>
+                        <span className="text-xs text-blue-600 font-medium">{order.rider}</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center">
                   {order.rating && (
@@ -123,7 +175,7 @@ const OrdersPage = ({ orders, onOrderClick }: OrdersPageProps) => {
 
         {filteredOrders.length === 0 && (
           <div className="text-center py-8">
-            <p className="text-gray-500">No orders found for the selected filter.</p>
+            <p className="text-gray-500">No orders found for the selected filters.</p>
           </div>
         )}
       </div>
