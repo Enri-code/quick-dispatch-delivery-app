@@ -32,9 +32,9 @@ const Index = () => {
   const [showNotification, setShowNotification] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [savedAddresses, setSavedAddresses] = useState([
-    { id: 1, label: 'Home', address: '123 Main St, Your City', type: 'home' },
-    { id: 2, label: 'Work', address: '456 Office Blvd, Downtown', type: 'work' },
-    { id: 3, label: 'Gym', address: '789 Fitness Ave, Uptown', type: 'other' },
+    { id: 1, label: 'Home', address: '123 Main St, Your City', type: 'home' as const },
+    { id: 2, label: 'Work', address: '456 Office Blvd, Downtown', type: 'work' as const },
+    { id: 3, label: 'Gym', address: '789 Fitness Ave, Uptown', type: 'other' as const },
   ]);
   const [orders, setOrders] = useState([
     { 
@@ -415,8 +415,8 @@ const Index = () => {
         />
       )}
 
-      {/* Fixed Bottom Action Sheet - positioned above bottom navigation */}
-      <div className="flex-shrink-0">
+      {/* Fixed Bottom Action Sheet - positioned above bottom navigation with margin */}
+      <div className="flex-shrink-0 mb-16">
         <BottomActionSheet 
           onCallRider={() => setShowCallRider(true)}
           onRequestDelivery={() => setShowRequestDelivery(true)}
