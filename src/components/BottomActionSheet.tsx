@@ -19,8 +19,8 @@ const BottomActionSheet = ({ onCallRider, onRequestDelivery, onActionClick }: Bo
 
   return (
     <div className="bg-white border-t border-gray-200 max-h-80 overflow-y-auto">
-      <div className="px-3 py-3 pb-20">
-        {/* Quick Actions - Now on top */}
+      <div className="px-3 py-3">
+        {/* Quick Actions */}
         <h3 className="text-xs font-semibold text-gray-700 mb-2">Quick Actions</h3>
         <div className="grid grid-cols-4 gap-2 mb-4">
           {quickActions.map((action) => (
@@ -37,7 +37,7 @@ const BottomActionSheet = ({ onCallRider, onRequestDelivery, onActionClick }: Bo
           ))}
         </div>
 
-        {/* Main Action Buttons - Now below quick actions */}
+        {/* Main Action Buttons */}
         <div className="grid grid-cols-2 gap-3">
           <Button
             onClick={onCallRider}

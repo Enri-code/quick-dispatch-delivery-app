@@ -1,9 +1,7 @@
 
-import React, { useState } from 'react';
-import { X, MapPin, Check } from 'lucide-react';
+import React from 'react';
+import { X, MapPin, Home, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import LiveMap from './LiveMap';
 
 interface AddressSelectorProps {
   isOpen: boolean;
@@ -13,95 +11,78 @@ interface AddressSelectorProps {
 }
 
 const AddressSelector = ({ isOpen, onClose, onSelectAddress, title }: AddressSelectorProps) => {
-  const [selectedAddress, setSelectedAddress] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const suggestedAddresses = [
-    '123 Main St, Your City',
-    '456 Oak Avenue, Downtown',
-    '789 Elm Street, Uptown',
-    '321 Pine Road, Midtown',
-    '654 Cedar Lane, Westside'
+  const savedAddresses = [
+    { id: 1, label: 'Home', address: '123 Main St, Your City', type: 'home' },
+    { id: 2, label: 'Work', address: '456 Office Blvd, Downtown', type: 'work' },
+    { id: 3, label: 'Gym', address: '789 Fitness Ave, Uptown', type: 'other' },
   ];
 
-  const handleConfirm = () => {
-    if (selectedAddress) {
-      onSelectAddress(selectedAddress);
-      onClose();
+  const suggestedAddresses = [
+    'Current Location (GPS)',
+    'Tony\'s Pizza, Main St',
+    'Fresh Market, Oak Ave',
+    'City Hall, Center Ave',
+    'Downtown Office, 5th St',
+  ];
+
+  const getAddressIcon = (type: string) => {
+    switch (type) {
+      case 'home': return Home;
+      case 'work': return Building;
+      default: return MapPin;
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-white">
-      <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="p-4 border-b border-gray-200 bg-white z-10">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xl font-bold text-gray-800">{title}</h2>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="w-5 h-5" />
-            </Button>
-          </div>
-          
-          <Input
-            placeholder="Search for an address..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="mb-3"
-          />
-          
-          {selectedAddress && (
-            <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
-              <div className="flex items-center">
-                <MapPin className="w-4 h-4 text-blue-600 mr-2" />
-                <span className="text-sm font-medium text-blue-800">{selectedAddress}</span>
-              </div>
-              <Button onClick={handleConfirm} size="sm">
-                <Check className="w-4 h-4 mr-1" />
-                Confirm
-              </Button>
-            </div>
-          )}
+    <div className="fixed inset-0 z-50 flex items-end">
+      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+      <div className="relative w-full bg-white rounded-t-2xl p-6 max-h-[70vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-gray-800">{title}</h2>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="w-5 h-5" />
+          </Button>
         </div>
 
-        {/* Map */}
-        <div className="flex-1 relative">
-          <LiveMap />
-          
-          {/* Tap instruction */}
-          <div className="absolute top-4 left-4 right-4 z-10">
-            <div className="bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-              <p className="text-sm text-gray-700 text-center">
-                📍 Tap on the map to select a location
-              </p>
-            </div>
+        {/* Saved Addresses */}
+        <div className="mb-6">
+          <h3 className="font-semibold mb-3">Saved Addresses</h3>
+          <div className="space-y-2">
+            {savedAddresses.map((address) => {
+              const IconComponent = getAddressIcon(address.type);
+              return (
+                <button
+                  key={address.id}
+                  onClick={() => onSelectAddress(address.address)}
+                  className="w-full flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <IconComponent className="w-5 h-5 text-gray-500 mr-3" />
+                  <div className="flex-1 text-left">
+                    <p className="font-medium">{address.label}</p>
+                    <p className="text-sm text-gray-600">{address.address}</p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* Suggested Addresses */}
-        <div className="bg-white border-t border-gray-200 p-4 max-h-48 overflow-y-auto">
-          <h3 className="font-semibold text-gray-800 mb-3">Suggested Addresses</h3>
+        <div>
+          <h3 className="font-semibold mb-3">Suggested</h3>
           <div className="space-y-2">
-            {suggestedAddresses
-              .filter(addr => addr.toLowerCase().includes(searchQuery.toLowerCase()))
-              .map((address) => (
-                <button
-                  key={address}
-                  onClick={() => setSelectedAddress(address)}
-                  className={`w-full text-left p-3 rounded-lg border transition-colors ${
-                    selectedAddress === address 
-                      ? 'border-blue-500 bg-blue-50 text-blue-800' 
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <MapPin className="w-4 h-4 text-gray-500 mr-2" />
-                    <span className="text-sm">{address}</span>
-                  </div>
-                </button>
-              ))}
+            {suggestedAddresses.map((address, index) => (
+              <button
+                key={index}
+                onClick={() => onSelectAddress(address)}
+                className="w-full flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <MapPin className="w-5 h-5 text-gray-500 mr-3" />
+                <p className="font-medium text-left">{address}</p>
+              </button>
+            ))}
           </div>
         </div>
       </div>

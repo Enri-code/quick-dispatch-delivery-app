@@ -370,10 +370,15 @@ const Index = () => {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  onClick={handleViewInProgressOrders}
+                  onClick={() => handleRiderInfoClick({ 
+                    name: inProgressDeliveries[0].rider, 
+                    company: inProgressDeliveries[0].riderCompany, 
+                    rating: 4.8, 
+                    eta: inProgressDeliveries[0].eta 
+                  })}
                   className="h-6 px-1.5 text-xs"
                 >
-                  <List className="w-3 h-3" />
+                  <Info className="w-3 h-3" />
                 </Button>
                 <Button 
                   variant="ghost" 
@@ -386,15 +391,10 @@ const Index = () => {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  onClick={() => handleRiderInfoClick({ 
-                    name: inProgressDeliveries[0].rider, 
-                    company: inProgressDeliveries[0].riderCompany, 
-                    rating: 4.8, 
-                    eta: inProgressDeliveries[0].eta 
-                  })}
+                  onClick={handleViewInProgressOrders}
                   className="h-6 px-1.5 text-xs"
                 >
-                  <Info className="w-3 h-3" />
+                  <List className="w-3 h-3" />
                 </Button>
               </div>
             </div>
@@ -415,8 +415,8 @@ const Index = () => {
         />
       )}
 
-      {/* Fixed Bottom Action Sheet - positioned above bottom navigation with margin */}
-      <div className="flex-shrink-0 mb-16">
+      {/* Fixed Bottom Action Sheet - positioned above bottom navigation */}
+      <div className="flex-shrink-0">
         <BottomActionSheet 
           onCallRider={() => setShowCallRider(true)}
           onRequestDelivery={() => setShowRequestDelivery(true)}

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Star, Clock, Filter, Download, FileText, FileSpreadsheet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import OrdersReport from '@/components/OrdersReport';
 
 interface OrdersPageProps {
@@ -20,14 +21,6 @@ const OrdersPage = ({ orders, onOrderClick, onRiderClick }: OrdersPageProps) => 
     { id: 'all', label: 'All' },
     { id: 'in_progress', label: 'In Progress' },
     { id: 'delivered', label: 'Completed' },
-  ];
-
-  const categoryFilters = [
-    { id: 'all', label: 'All Categories' },
-    { id: 'food', label: 'Food' },
-    { id: 'groceries', label: 'Groceries' },
-    { id: 'errand', label: 'Errand' },
-    { id: 'custom', label: 'Custom' },
   ];
 
   const filteredOrders = orders.filter(order => {
@@ -84,35 +77,36 @@ const OrdersPage = ({ orders, onOrderClick, onRiderClick }: OrdersPageProps) => 
           </Button>
         </div>
 
-        {/* Status Filters */}
-        <div className="flex gap-2 mb-3 overflow-x-auto">
-          {filters.map((filterOption) => (
-            <Button
-              key={filterOption.id}
-              variant={filter === filterOption.id ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilter(filterOption.id)}
-              className="whitespace-nowrap"
-            >
-              {filterOption.label}
-            </Button>
-          ))}
-        </div>
+        {/* Filters Row */}
+        <div className="flex items-center justify-between gap-3 mb-6">
+          {/* Status Filters */}
+          <div className="flex gap-2 overflow-x-auto">
+            {filters.map((filterOption) => (
+              <Button
+                key={filterOption.id}
+                variant={filter === filterOption.id ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilter(filterOption.id)}
+                className="whitespace-nowrap"
+              >
+                {filterOption.label}
+              </Button>
+            ))}
+          </div>
 
-        {/* Category Filters */}
-        <div className="flex gap-2 mb-6 overflow-x-auto">
-          {categoryFilters.map((categoryOption) => (
-            <Button
-              key={categoryOption.id}
-              variant={categoryFilter === categoryOption.id ? "default" : "outline"}
-              size="sm"
-              onClick={() => setCategoryFilter(categoryOption.id)}
-              className="whitespace-nowrap"
-            >
-              <Filter className="w-3 h-3 mr-1" />
-              {categoryOption.label}
-            </Button>
-          ))}
+          {/* Category Filter Dropdown */}
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="food">Food</SelectItem>
+              <SelectItem value="groceries">Groceries</SelectItem>
+              <SelectItem value="errand">Errand</SelectItem>
+              <SelectItem value="custom">Custom</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Orders List */}
@@ -136,29 +130,6 @@ const OrdersPage = ({ orders, onOrderClick, onRiderClick }: OrdersPageProps) => 
                       {statusDisplay.text}
                     </p>
                   </div>
-                  {order.rider && (
-                    <div className="flex items-center mt-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRiderClick?.({ 
-                            name: order.rider, 
-                            company: order.riderCompany, 
-                            rating: 4.8, 
-                            eta: order.eta 
-                          });
-                        }}
-                        className="flex items-center hover:bg-gray-100 rounded p-1 -ml-1"
-                      >
-                        <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center mr-2">
-                          <span className="text-white font-semibold text-xs">
-                            {order.rider.charAt(0)}
-                          </span>
-                        </div>
-                        <span className="text-xs text-blue-600 font-medium">{order.rider}</span>
-                      </button>
-                    </div>
-                  )}
                 </div>
                 <div className="flex items-center">
                   {order.rating && (

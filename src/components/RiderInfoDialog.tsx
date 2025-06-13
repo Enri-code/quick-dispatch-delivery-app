@@ -18,6 +18,8 @@ interface RiderInfoDialogProps {
 const RiderInfoDialog = ({ isOpen, onClose, rider }: RiderInfoDialogProps) => {
   if (!rider) return null;
 
+  const isAvailable = Math.random() > 0.3; // Random availability for demo
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -56,15 +58,17 @@ const RiderInfoDialog = ({ isOpen, onClose, rider }: RiderInfoDialogProps) => {
           </div>
 
           {/* Status */}
-          <div className="bg-green-50 p-3 rounded-lg">
+          <div className={`${isAvailable ? 'bg-green-50' : 'bg-red-50'} p-3 rounded-lg`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <div className="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse" />
-                <span className="text-sm font-medium text-green-800">Available</span>
+                <div className={`w-3 h-3 ${isAvailable ? 'bg-green-500' : 'bg-red-500'} rounded-full mr-2 ${isAvailable ? 'animate-pulse' : ''}`} />
+                <span className={`text-sm font-medium ${isAvailable ? 'text-green-800' : 'text-red-800'}`}>
+                  {isAvailable ? 'Available' : 'Busy'}
+                </span>
               </div>
-              <div className="flex items-center text-sm text-green-700">
+              <div className={`flex items-center text-sm ${isAvailable ? 'text-green-700' : 'text-red-700'}`}>
                 <MapPin className="w-4 h-4 mr-1" />
-                <span>Nearby</span>
+                <span>{isAvailable ? 'Nearby' : 'On delivery'}</span>
               </div>
             </div>
           </div>
@@ -92,14 +96,12 @@ const RiderInfoDialog = ({ isOpen, onClose, rider }: RiderInfoDialogProps) => {
 
           {/* Actions */}
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1">
-              <Phone className="w-4 h-4 mr-2" />
-              Call
-            </Button>
-            <Button className="flex-1 bg-gradient-to-r from-blue-500 to-green-500">
-              <MapPin className="w-4 h-4 mr-2" />
-              Track
-            </Button>
+            {isAvailable && (
+              <Button className="flex-1 bg-gradient-to-r from-blue-500 to-green-500">
+                <Phone className="w-4 h-4 mr-2" />
+                Request Delivery
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
