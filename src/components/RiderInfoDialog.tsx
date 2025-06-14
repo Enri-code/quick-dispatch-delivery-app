@@ -137,7 +137,7 @@ const RiderInfoDialog = ({
                 onClick={handleRequestDelivery}
               >
                 <Package className="w-4 h-4 mr-2" />
-                Request Delivery
+                New Delivery
               </Button>
             )}
           </div>

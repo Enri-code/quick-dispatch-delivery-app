@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { MapPin, Phone, Package, Clock, Star, User, Home as HomeIcon, Eye, List, Map, Plus, Edit, Trash2, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,6 +16,7 @@ import RateDeliverySheet from '@/components/RateDeliverySheet';
 import RiderInfoDialog from '@/components/RiderInfoDialog';
 import TargetedDeliverySheet from '@/components/TargetedDeliverySheet';
 import AddressManager from '@/components/AddressManager';
+import LocationPicker from '@/components/LocationPicker';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -29,6 +29,8 @@ const Index = () => {
   const [showRateDelivery, setShowRateDelivery] = useState(false);
   const [showRiderInfo, setShowRiderInfo] = useState(false);
   const [showTargetedDelivery, setShowTargetedDelivery] = useState(false);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [locationPickerType, setLocationPickerType] = useState('pickup');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedRider, setSelectedRider] = useState(null);
   const [targetRider, setTargetRider] = useState(null);
@@ -260,6 +262,11 @@ const Index = () => {
     });
   };
 
+  const handleLocationPick = (address: string, type: string) => {
+    // This will be handled by the specific delivery sheets
+    setShowLocationPicker(false);
+  };
+
   if (activeTab === 'orders') {
     return (
       <div className="h-screen flex flex-col overflow-hidden">
@@ -405,19 +412,6 @@ const Index = () => {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  onClick={() => handleRiderInfoClick({ 
-                    name: inProgressDeliveries[0].rider, 
-                    company: inProgressDeliveries[0].riderCompany, 
-                    rating: 4.8, 
-                    eta: inProgressDeliveries[0].eta 
-                  })}
-                  className="h-6 px-1.5 text-xs"
-                >
-                  <Info className="w-3 h-3" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
                   onClick={handleLocateRider}
                   className="h-6 px-1.5 text-xs"
                 >
@@ -487,6 +481,11 @@ const Index = () => {
         }}
         selectedAction={selectedAction}
         lastDelivery={getLastDelivery()}
+        savedAddresses={savedAddresses}
+        onLocationPick={(type) => {
+          setLocationPickerType(type);
+          setShowLocationPicker(true);
+        }}
       />
 
       <TargetedDeliverySheet
@@ -501,6 +500,19 @@ const Index = () => {
           setTargetRider(null);
         }}
         targetRider={targetRider}
+        savedAddresses={savedAddresses}
+        onLocationPick={(type) => {
+          setLocationPickerType(type);
+          setShowLocationPicker(true);
+        }}
+      />
+
+      <LocationPicker
+        isOpen={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        onSelectLocation={handleLocationPick}
+        type={locationPickerType}
+        savedAddresses={savedAddresses}
       />
 
       <RiderDialog 
