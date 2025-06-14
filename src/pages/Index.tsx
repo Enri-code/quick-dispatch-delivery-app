@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { MapPin, Phone, Package, Clock, Star, User, Home as HomeIcon, Eye, List, Map, Plus, Edit, Trash2, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ import RiderDialog from '@/components/RiderDialog';
 import RiderArrivedSheet from '@/components/RiderArrivedSheet';
 import RateDeliverySheet from '@/components/RateDeliverySheet';
 import RiderInfoDialog from '@/components/RiderInfoDialog';
+import TargetedDeliverySheet from '@/components/TargetedDeliverySheet';
 import AddressManager from '@/components/AddressManager';
 import { useToast } from '@/hooks/use-toast';
 
@@ -26,11 +28,14 @@ const Index = () => {
   const [showRiderArrived, setShowRiderArrived] = useState(false);
   const [showRateDelivery, setShowRateDelivery] = useState(false);
   const [showRiderInfo, setShowRiderInfo] = useState(false);
+  const [showTargetedDelivery, setShowTargetedDelivery] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedRider, setSelectedRider] = useState(null);
+  const [targetRider, setTargetRider] = useState(null);
   const [activeDelivery, setActiveDelivery] = useState(null);
   const [showNotification, setShowNotification] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
+  const [savedRiders, setSavedRiders] = useState([]);
   const [savedAddresses, setSavedAddresses] = useState([
     { id: 1, label: 'Home', address: '123 Main St, Your City', type: 'home' as const },
     { id: 2, label: 'Work', address: '456 Office Blvd, Downtown', type: 'work' as const },
@@ -104,6 +109,29 @@ const Index = () => {
     setShowRiderInfo(true);
   };
 
+  const handleRiderRequestDelivery = (rider) => {
+    setTargetRider(rider);
+    setShowTargetedDelivery(true);
+  };
+
+  const handleSaveRider = (rider) => {
+    if (savedRiders.length < 2) {
+      setSavedRiders(prev => [...prev, rider]);
+      toast({
+        title: "Rider Saved",
+        description: `${rider.name} has been saved to your favorites`,
+      });
+    }
+  };
+
+  const handleUnsaveRider = (riderId) => {
+    setSavedRiders(prev => prev.filter(rider => rider.name !== riderId));
+    toast({
+      title: "Rider Removed",
+      description: "Rider has been removed from your favorites",
+    });
+  };
+
   const handleActionClick = (actionId) => {
     setSelectedAction(actionId);
     setShowRequestDelivery(true);
@@ -121,8 +149,8 @@ const Index = () => {
       time: 'just now',
       rating: null,
       status: 'waiting_for_rider',
-      rider: null,
-      riderCompany: null,
+      rider: data.targetRider || null,
+      riderCompany: data.riderCompany || null,
       eta: null,
       pickup: data.pickup,
       dropoff: data.dropoff,
@@ -133,28 +161,26 @@ const Index = () => {
     
     // Show waiting notification
     toast({
-      title: "Delivery Requested",
-      description: "Looking for available riders nearby...",
+      title: data.targetRider ? `Request sent to ${data.targetRider}` : "Delivery Requested",
+      description: data.targetRider ? "Waiting for rider to accept..." : "Looking for available riders nearby...",
     });
 
     // Simulate rider acceptance after 5 seconds
     setTimeout(() => {
-      const riderNames = ['Alex', 'Maria', 'David', 'Sarah', 'Mike'];
-      const riderCompanies = ['FastRide Co.', 'QuickDelivery', 'SpeedyDispatch', 'Independent', 'ExpressRiders'];
-      const randomRider = riderNames[Math.floor(Math.random() * riderNames.length)];
-      const randomCompany = riderCompanies[Math.floor(Math.random() * riderCompanies.length)];
+      const riderName = data.targetRider || (['Alex', 'Maria', 'David', 'Sarah', 'Mike'][Math.floor(Math.random() * 5)]);
+      const riderCompany = data.riderCompany || (['FastRide Co.', 'QuickDelivery', 'SpeedyDispatch', 'Independent', 'ExpressRiders'][Math.floor(Math.random() * 5)]);
       
       // Update order status
       setOrders(prev => prev.map(order => 
         order.id === newOrder.id 
-          ? { ...order, status: 'rider_accepted', rider: randomRider, riderCompany: randomCompany, eta: '12 min' }
+          ? { ...order, status: 'rider_accepted', rider: riderName, riderCompany: riderCompany, eta: '12 min' }
           : order
       ));
 
       // Show rider accepted notification with view button
       toast({
-        title: "Rider Found!",
-        description: `${randomRider} has accepted your delivery request`,
+        title: "Rider Accepted!",
+        description: `${riderName} has accepted your delivery request`,
         action: (
           <Button 
             size="sm" 
@@ -163,7 +189,7 @@ const Index = () => {
               // Set a timeout to allow tab change to complete before opening details
               setTimeout(() => {
                 const updatedOrder = orders.find(o => o.id === newOrder.id);
-                setSelectedOrder({ ...newOrder, rider: randomRider, riderCompany: randomCompany, eta: '12 min', status: 'rider_accepted' });
+                setSelectedOrder({ ...newOrder, rider: riderName, riderCompany: riderCompany, eta: '12 min', status: 'rider_accepted' });
                 setShowOrderDetails(true);
               }, 100);
             }}
@@ -176,8 +202,8 @@ const Index = () => {
       // Set active delivery for map notification
       setActiveDelivery({
         ...newOrder,
-        rider: randomRider,
-        riderCompany: randomCompany,
+        rider: riderName,
+        riderCompany: riderCompany,
         eta: '12 min',
         status: 'rider_accepted'
       });
@@ -257,6 +283,10 @@ const Index = () => {
           isOpen={showRiderInfo}
           onClose={() => setShowRiderInfo(false)}
           rider={selectedRider}
+          onRequestDelivery={handleRiderRequestDelivery}
+          savedRiders={savedRiders}
+          onSaveRider={handleSaveRider}
+          onUnsaveRider={handleUnsaveRider}
         />
       </div>
     );
@@ -264,10 +294,11 @@ const Index = () => {
 
   if (activeTab === 'profile') {
     const recentRiders = [
+      ...savedRiders,
       { name: 'Alex', company: 'FastRide Co.', rating: 4.8, rides: 23 },
       { name: 'Maria', company: 'QuickDelivery', rating: 5.0, rides: 15 },
       { name: 'David', company: 'SpeedyDispatch', rating: 4.6, rides: 8 },
-    ];
+    ].slice(0, 5);
 
     return (
       <div className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-blue-50 to-green-50">
@@ -338,6 +369,10 @@ const Index = () => {
           isOpen={showRiderInfo}
           onClose={() => setShowRiderInfo(false)}
           rider={selectedRider}
+          onRequestDelivery={handleRiderRequestDelivery}
+          savedRiders={savedRiders}
+          onSaveRider={handleSaveRider}
+          onUnsaveRider={handleUnsaveRider}
         />
       </div>
     );
@@ -404,7 +439,7 @@ const Index = () => {
 
       {/* Live Map - takes remaining space above bottom sheets */}
       <div className="flex-1 relative overflow-hidden">
-        <LiveMap onRiderClick={handleRiderClick} />
+        <LiveMap onRiderClick={handleRiderInfoClick} />
       </div>
 
       {/* Delivery Notification */}
@@ -454,6 +489,20 @@ const Index = () => {
         lastDelivery={getLastDelivery()}
       />
 
+      <TargetedDeliverySheet
+        isOpen={showTargetedDelivery}
+        onClose={() => {
+          setShowTargetedDelivery(false);
+          setTargetRider(null);
+        }}
+        onConfirm={(data) => {
+          handleDeliveryConfirm(data);
+          setShowTargetedDelivery(false);
+          setTargetRider(null);
+        }}
+        targetRider={targetRider}
+      />
+
       <RiderDialog 
         isOpen={showRiderDialog}
         onClose={() => setShowRiderDialog(false)}
@@ -501,6 +550,10 @@ const Index = () => {
         isOpen={showRiderInfo}
         onClose={() => setShowRiderInfo(false)}
         rider={selectedRider}
+        onRequestDelivery={handleRiderRequestDelivery}
+        savedRiders={savedRiders}
+        onSaveRider={handleSaveRider}
+        onUnsaveRider={handleUnsaveRider}
       />
     </div>
   );

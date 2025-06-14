@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Star, X, Phone, MapPin, Calendar } from 'lucide-react';
+import { Star, X, Package, MapPin, Calendar, Heart, HeartOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,12 +13,38 @@ interface RiderInfoDialogProps {
   isOpen: boolean;
   onClose: () => void;
   rider: any;
+  onRequestDelivery?: (rider: any) => void;
+  savedRiders?: any[];
+  onSaveRider?: (rider: any) => void;
+  onUnsaveRider?: (riderId: string) => void;
 }
 
-const RiderInfoDialog = ({ isOpen, onClose, rider }: RiderInfoDialogProps) => {
+const RiderInfoDialog = ({ 
+  isOpen, 
+  onClose, 
+  rider, 
+  onRequestDelivery,
+  savedRiders = [],
+  onSaveRider,
+  onUnsaveRider
+}: RiderInfoDialogProps) => {
   if (!rider) return null;
 
   const isAvailable = Math.random() > 0.3; // Random availability for demo
+  const isSaved = savedRiders.some(saved => saved.name === rider.name);
+
+  const handleSaveToggle = () => {
+    if (isSaved) {
+      onUnsaveRider?.(rider.name);
+    } else if (savedRiders.length < 2) {
+      onSaveRider?.(rider);
+    }
+  };
+
+  const handleRequestDelivery = () => {
+    onRequestDelivery?.(rider);
+    onClose();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -30,10 +56,19 @@ const RiderInfoDialog = ({ isOpen, onClose, rider }: RiderInfoDialogProps) => {
                 {rider.name?.charAt(0)}
               </span>
             </div>
-            <div>
+            <div className="flex-1">
               <div className="text-lg font-bold">{rider.name}</div>
               <div className="text-sm font-normal text-gray-600">{rider.company}</div>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSaveToggle}
+              disabled={!isSaved && savedRiders.length >= 2}
+              className={`${isSaved ? 'text-red-500' : 'text-gray-400'} hover:text-red-600`}
+            >
+              {isSaved ? <HeartOff className="w-5 h-5" /> : <Heart className="w-5 h-5" />}
+            </Button>
           </DialogTitle>
         </DialogHeader>
 
@@ -96,9 +131,12 @@ const RiderInfoDialog = ({ isOpen, onClose, rider }: RiderInfoDialogProps) => {
 
           {/* Actions */}
           <div className="flex gap-2">
-            {isAvailable && (
-              <Button className="flex-1 bg-gradient-to-r from-blue-500 to-green-500">
-                <Phone className="w-4 h-4 mr-2" />
+            {isAvailable && onRequestDelivery && (
+              <Button 
+                className="flex-1 bg-gradient-to-r from-blue-500 to-green-500"
+                onClick={handleRequestDelivery}
+              >
+                <Package className="w-4 h-4 mr-2" />
                 Request Delivery
               </Button>
             )}

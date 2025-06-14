@@ -18,7 +18,7 @@ const BottomActionSheet = ({ onCallRider, onRequestDelivery, onActionClick }: Bo
   ];
 
   return (
-    <div className="bg-white border-t border-gray-200 max-h-80 overflow-y-auto">
+    <div className="bg-white border-t border-gray-200 max-h-80 overflow-y-auto mb-16">
       <div className="px-3 py-3">
         {/* Quick Actions */}
         <h3 className="text-xs font-semibold text-gray-700 mb-2">Quick Actions</h3>
